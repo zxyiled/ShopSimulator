@@ -39,5 +39,17 @@ public class Validator {
     }
 
     //Get custom error message
-
+    public static String getMsgError(String typeError) {
+        return switch (typeError) {
+            case "code" -> "Error: Invalid Code. Has to contain only letters and numbers";
+            case "nname" -> "Error: Invalid Name. Minimum length is 3 characters";
+            case "quantity" -> "Error: Invalid Quantity. Has to be greater than or equal to 0";
+            case "price" -> "Error: Invalid Price. Has to be greater than 0";
+            case "existent" -> "Error: The product already exists";
+            case "no_existent" -> "Error: The product does not exist or was not found";
+            case "insufficient_Stock" -> "Error: The product does not have enough stock";
+            case "operation_quantity" -> "Error: The quantity has to be greater than 0";
+            default -> "Error: Failed to validate";
+        };
+    }
 }
