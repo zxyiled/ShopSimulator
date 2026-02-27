@@ -1,8 +1,8 @@
 package org.app;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import static org.Main.logger;
 import org.logic.Product;
 import org.logic.Validator;
@@ -30,7 +30,7 @@ public class SysInventory {
         }
 
         if (!Validator.validatePrice(price)) {
-            logger.severe(Validator.getMsgError("price"));
+            logger.warning(Validator.getMsgError("price"));
             return false;
         }
 
