@@ -22,15 +22,18 @@ public class Product {
     public void setCode(String code) {
         this.code = code;
     }
+
     public String getName() {
         return name;
     }
+
     public int getQuantity(){
         return quantity;
     }
     public void setQuantity(int quantity){
         this.quantity = quantity;
     }
+
     public double getPrice(){
         return price;
     }
