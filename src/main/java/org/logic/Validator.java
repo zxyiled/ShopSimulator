@@ -24,11 +24,13 @@ public class Validator {
     // --- Public static methods ---
 
     public static boolean validateCode(String code) {
-     return code != null && !code.trim().isEmpty() && code.matches("[A-Za-z0-9]+");
+     return code != null && !code.trim()
+             .isEmpty() && code.matches("[A-Za-z0-9]+");
     }
 
     public static boolean validateName(String name) {
-        return name != null && !name.trim().isEmpty() && name.length() >= 3;
+        return name != null && !name.trim()
+                .isEmpty() && name.length() >= 3;
     }
 
     public static boolean validateQuantity(int quantity) {
@@ -40,7 +42,9 @@ public class Validator {
     }
 
     public static boolean validateProductNonExistent(List<Product> products, String code) {
-        return products.stream().noneMatch(p -> p.getCode().equalsIgnoreCase(code));
+        return products.stream()
+                .noneMatch(p -> p.getCode()
+                        .equalsIgnoreCase(code));
     }
 
     public static boolean validateProductExistent(Optional<Product> product) {

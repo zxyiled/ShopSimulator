@@ -167,7 +167,8 @@ public class SysInventory {
 
     //Get products with low stock
     public List<Product> getProductsLowStock() {
-        return products.stream().filter(Validator::isStockLow).toList();
+        return products.stream()
+                .filter(Validator::isStockLow).toList();
     }
 
     //Clear Alerts
@@ -193,7 +194,9 @@ public class SysInventory {
 
     //Search product by code
     public Optional<Product> searchProductByCode(String code) {
-        return products.stream().filter(p -> p.getCode().equalsIgnoreCase(code)).findFirst();
+        return products.stream()
+                .filter(p -> p.getCode()
+                        .equalsIgnoreCase(code)).findFirst();
     }
 
     //Validate product exist
