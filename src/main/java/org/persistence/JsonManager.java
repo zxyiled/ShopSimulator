@@ -18,9 +18,9 @@ import java.util.Optional;
 public class JsonManager {
 
     private static final String DATA_DIRECTORY = "data";
-    private static final String PRODUCTS_FILE = "products.json" + File.separator + products.json;
-    private static final String ALERTS_FILE = "alerts.json" + File.separator + alerts.json;
-    private ObjectMapper objectMapper;
+    private static final String PRODUCTS_FILE = DATA_DIRECTORY + File.separator + "products.json";
+    private static final String ALERTS_FILE = DATA_DIRECTORY + File.separator + "alerts.json";
+    private final ObjectMapper objectMapper;
 
     public JsonManager() {
         this.objectMapper = new ObjectMapper();
@@ -46,7 +46,7 @@ public class JsonManager {
      * @return true if the products were saved successfully, false otherwise.
      */
 
-    public boolean SaveProducts(List<Product> products) {
+    public boolean saveProducts(List<Product> products) {
         try {
             objectMapper.writeValue(new File(PRODUCTS_FILE), products);
             logger.info("Products saved successfully");
@@ -85,7 +85,7 @@ public class JsonManager {
     public boolean addProduct(Product product) {
         List<Product> products = loadProducts();
         products.add(product);
-        return SaveProducts(products);
+        return saveProducts(products);
     }
 
     /**
@@ -134,7 +134,144 @@ public class JsonManager {
      * @return true if the product was removed successfully, false otherwise.
      */
 
-    public boolean deleteProduct
+    public boolean deleteProduct(String code) {
+        List<Product> products = loadProducts();
+        boolean removed = products.removeIf(p -> p.getCode()
+                .equalsIgnoreCase(code));
 
+        if (removed) {
+            saveProducts(products);
+            logger.info("Product removed successfully: " + code);
+            return true;
+        } else {
+            logger.warning("Product not found for remove: " + code);
+            return false;
+        }
+    }
+
+    // --- Alerts ---
+
+    /**
+     * Save the list in a JSON file
+     * @param alerts List of alerts to save
+     * @return true if was saved successfully, false otherwise
+     */
+
+    public boolean saveAlerts(List<String> alerts) {
+        try {
+            objectMapper.writeValue(new File(ALERTS_FILE), alerts);
+            logger.info("Alerts saved successfully. Total: " + alerts.size());
+            return true;
+        } catch (IOException e) {
+            logger.severe("Error saving alerts: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Load the list of alerts from the JSON file
+     * @return list of alerts loaded (empty if file not exist or error)
+     */
+
+    public List<String> loadAlerts() {
+        File file = new File(ALERTS_FILE);
+        if (!file.exists()) {
+            logger.info("Alerts file not found. Starting with empty list");
+            return new ArrayList<>();
+        }
+
+        try {
+            List<String> alerts = objectMapper.readValue(file, new TypeReference<List<String>>() {});
+            logger.info("Alerts loaded successfully. Total: " + alerts.size());
+            return alerts;
+        } catch (MismatchedInputException e) {
+            logger.warning("⚠Alerts file is empty");
+            return new ArrayList<>();
+        } catch (IOException e) {
+            logger.severe("Error loading alerts: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Add an alert to the JSON file
+     * @param alert Alert to add
+     * @return true if was added successfully, false otherwise
+     */
+
+    public boolean addAlert(String alert) {
+        List<String> alerts = loadAlerts();
+        if (!alerts.contains(alert)) {
+            alerts.add(alert);
+            return saveAlerts(alerts);
+        }
+        return true;
+    }
+
+    /**
+     * Clear all the alerts from the JSON file
+     * @return true if were successfully cleared
+     */
+
+    public boolean clearAlerts() {
+        return saveAlerts(new ArrayList<>());
+    }
+
+    // --- Utility methods ---
+
+    /**
+     * Save products and also alerts in his respective files
+     * @param products List of products
+     * @param alerts List of alerts
+     * @return true if both were successfully saved
+     */
+
+    public boolean saveAll(List<Product> products, List<String> alerts) {
+        boolean productsSaved = saveProducts(products);
+        boolean alertsSaved = saveAlerts(alerts);
+        return productsSaved && alertsSaved;
+    }
+
+    /**
+     * Verify if exist the file of products
+     * @return true if exist
+     */
+
+    public boolean existProductsFile() {
+        return new File(PRODUCTS_FILE).exists();
+    }
+
+    /**
+     * Verify if exist the file of alerts
+     * @return true if exist
+     */
+
+    public String getProductsFilePath() {
+        return new File(PRODUCTS_FILE).getAbsolutePath();
+    }
+
+    /**
+     * Get the absolute path of the alerts file
+     * @return file path
+     */
+
+    public String getAlertsFilePath() {
+        return new File(ALERTS_FILE).getAbsolutePath();
+    }
+
+    /**
+     * Get the size of the product file in bytes
+     * @return Size in bytes, 0 if file not exist
+     */
+
+    public long getProductsFileSize() {
+        File file = new File(PRODUCTS_FILE);
+        return file.exists() ? file.length() : 0;
+    }
+
+    public long getAlertsFileSize() {
+        File file = new File(ALERTS_FILE);
+        return file.exists() ? file.length() : 0;
+    }
 }
 
