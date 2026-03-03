@@ -6,14 +6,29 @@ import java.util.Optional;
 import static org.Main.logger;
 import org.logic.Product;
 import org.logic.Validator;
+import org.persistence.JsonManager;
 
 public class SysInventory {
+
     private List<Product> products;
     private List<String> alerts;
-
+    private final JsonManager jsonManager;
+    private boolean autoSave;
+    
     public SysInventory() {
-        this.products = new ArrayList<>();
-        this.alerts = new ArrayList<>();
+        this(true);
+    }
+
+    public SysInventory(boolean autoSave) {
+        this.jsonManager = new JsonManager();
+        this.autoSave = autoSave;
+        //Load products and alerts from JSON
+        this.products = jsonManager.loadProducts();
+        this.alerts = jsonManager.loadAlerts();
+        logger.info("System initialized. Products loaded: " + products.size());
+        if (!alerts.isEmpty()) {
+            logger.info("Pending alerts: " + alerts.size());
+        }
     }
 
     // --- Public Methods ---
@@ -42,13 +57,20 @@ public class SysInventory {
         }
 
         if (!Validator.validateProductNonExistent(products, code)) {
-            logger.warning(Validator.getMsgError(Validator.ERROR_NON_EXISTENT));
+            logger.warning(Validator.getMsgError(Validator.ERROR_EXISTENT));
             return false;
         }
 
-        Product newProduct = new Product(code, name, price, quantity);
+        Product newProduct = new Product(code.toUpperCase(), name, price, quantity);
         products.add(newProduct);
-        logger.info("Product registered successfully: " + newProduct.getName());
+
+        //Save in JSON if autoSave is active
+        if (autoSave) {
+            jsonManager.saveProducts(products);
+        }
+
+        logger.info("Product registered successfully: " + newProduct.getName() +
+                " (Code: " + newProduct.getCode() + ")");
 
         verifyLowStock(newProduct);
         return true;
@@ -88,7 +110,7 @@ public class SysInventory {
             //Validate enough stock for reduction
             if (!Validator.validateEnoughStock(product, quantity)) {
                 logger.warning(Validator.getMsgError(Validator.ERROR_INSUFFICIENT_STOCK) +
-                        "(Current stock: " + currentStock + ")");
+                        " (Current stock: " + currentStock + ")");
                 return false;
             }
             newStock = currentStock - quantity;
@@ -102,6 +124,12 @@ public class SysInventory {
 
         //Actualize the stock
         product.setQuantity(newStock);
+
+        //Save in JSON if autoSave is active
+        if (autoSave) {
+            jsonManager.saveProducts(products);
+        }
+
         String action = isIncrement ? "increased" : "reduced";
         logger.info(" Stock " + action + " successfully. New stock of " +
                 product.getName() + ": " + newStock);
@@ -208,6 +236,51 @@ public class SysInventory {
         return true;
     }
 
+    // --- Persistence Methods ---
+
+    /**
+     * Save all the data manually (products and alerts)
+     * @return true if was saved correctly
+     */
+
+    public boolean saveData() {
+        boolean productsSaved = jsonManager.saveProducts(products);
+        boolean alertsSaved = jsonManager.saveAlerts(alerts);
+
+        if (productsSaved && alertsSaved) {
+            logger.info("Data saved successfully");
+            logger.info("Products: " + jsonManager.getProductsFilePath());
+            logger.info("Alerts: " + jsonManager.getAlertsFilePath());
+            return true;
+        } else {
+            logger.warning("Failed to save data");
+            return false;
+        }
+    }
+
+    /**
+     * Reload the data from the JSON files
+     * @return true if was reload correctly
+     */
+
+    public boolean reloadData() {
+        this.products = jsonManager.loadProducts();
+        this.alerts = jsonManager.loadAlerts();
+        logger.info("Data reloaded. Products: " + products.size() +
+                ", Alerts: " + alerts.size());
+        return true;
+    }
+
+    /**
+     * Active or deactivate the auto-save
+     * @param autoSave true to active, false to deactivate
+     */
+
+    public void setAutoSave(boolean autoSave) {
+        this.autoSave = autoSave;
+        logger.info("Auto-save " + (autoSave ? "activated" : "deactivated"));
+    }
+
     // --- Getters ---
     public List<Product> getProducts() {
         return new ArrayList<>(products);
@@ -225,4 +298,3 @@ public class SysInventory {
         return alerts.size();
     }
 }
-
