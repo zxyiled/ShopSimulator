@@ -57,7 +57,7 @@ public class JsonManager {
         }
     }
 
-    public List<Product> loadProducts() {
+    public static List<Product> loadProducts() {
         File file = new File(PRODUCTS_FILE);
         if (!file.exists()) {
             logger.info("Products file not found");
@@ -173,7 +173,7 @@ public class JsonManager {
      * @return list of alerts loaded (empty if file not exist or error)
      */
 
-    public List<String> loadAlerts() {
+    public static List<String> loadAlerts() {
         File file = new File(ALERTS_FILE);
         if (!file.exists()) {
             logger.info("Alerts file not found. Starting with empty list");
