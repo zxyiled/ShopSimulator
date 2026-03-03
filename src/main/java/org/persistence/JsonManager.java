@@ -57,7 +57,7 @@ public class JsonManager {
         }
     }
 
-    public static List<Product> loadProducts() {
+    public List<Product> loadProducts() {
         File file = new File(PRODUCTS_FILE);
         if (!file.exists()) {
             logger.info("Products file not found");
@@ -173,7 +173,7 @@ public class JsonManager {
      * @return list of alerts loaded (empty if file not exist or error)
      */
 
-    public static List<String> loadAlerts() {
+    public List<String> loadAlerts() {
         File file = new File(ALERTS_FILE);
         if (!file.exists()) {
             logger.info("Alerts file not found. Starting with empty list");
@@ -181,7 +181,7 @@ public class JsonManager {
         }
 
         try {
-            List<String> alerts = objectMapper.readValue(file, new TypeReference<List<String>>() {});
+            List<String> alerts = objectMapper.readValue(file, new TypeReference<>() {});
             logger.info("Alerts loaded successfully. Total: " + alerts.size());
             return alerts;
         } catch (MismatchedInputException e) {
@@ -243,7 +243,7 @@ public class JsonManager {
 
     /**
      * Verify if exist the file of alerts
-     * @return true if exist
+     * @return file path
      */
 
     public String getProductsFilePath() {
