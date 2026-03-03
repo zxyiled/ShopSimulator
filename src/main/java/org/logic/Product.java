@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public class Product {
 
     private String code;
-    private String name;
+    private final String name;
     private double price;
     private int quantity;
 
