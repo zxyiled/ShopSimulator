@@ -1,5 +1,7 @@
 package org.logic;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 public class Product {
 
     private String code;
@@ -8,7 +10,12 @@ public class Product {
     private int quantity;
 
     //Constructor
-    public Product(String code, String name, double price, int quantity) {
+    @JsonCreator
+    public Product(
+            @JsonProperty("code") String code,
+            @JsonProperty("name") String name,
+            @JsonProperty("price") double price,
+            @JsonProperty("quantity") int quantity) {
         this.code = code;
         this.name = name;
         this.price = price;
