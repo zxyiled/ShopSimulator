@@ -2,6 +2,7 @@ package org.logic;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+
 public class Product {
 
     private String code;
