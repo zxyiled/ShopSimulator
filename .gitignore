@@ -46,4 +46,5 @@ bin/
 .env
 
 ### Ignore data files
-/ data /
+/data/
+*.json
