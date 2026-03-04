@@ -281,6 +281,11 @@ public class SysInventory {
         logger.info("Auto-save " + (autoSave ? "activated" : "deactivated"));
     }
 
+    public boolean isAutoSave() {
+        return autoSave;
+    }
+
+
     // --- Getters ---
     public List<Product> getProducts() {
         return new ArrayList<>(products);
@@ -298,3 +303,4 @@ public class SysInventory {
         return alerts.size();
     }
 }
+
