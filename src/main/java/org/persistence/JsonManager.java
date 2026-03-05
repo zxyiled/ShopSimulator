@@ -13,7 +13,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class JsonManager {
 
@@ -64,7 +63,7 @@ public class JsonManager {
             return new ArrayList<>();
         }
         try {
-            List <Product> products = objectMapper.readValue(file, new TypeReference<List<Product>>() {});
+            List <Product> products = objectMapper.readValue(file, new TypeReference<>() {});
             logger.info("Products loaded successfully. Total: " + products.size());
             return products;
         } catch (MismatchedInputException e) {
@@ -112,7 +111,7 @@ public class JsonManager {
             logger.info("Alerts loaded successfully. Total: " + alerts.size());
             return alerts;
         } catch (MismatchedInputException e) {
-            logger.warning("⚠Alerts file is empty");
+            logger.warning("Alerts file is empty");
             return new ArrayList<>();
         } catch (IOException e) {
             logger.severe("Error loading alerts: " + e.getMessage());
