@@ -7,7 +7,7 @@ public class Product {
 
     private final String code;
     private final String name;
-    private final double price;
+    private double price;
     private int quantity;
 
     //Constructor
