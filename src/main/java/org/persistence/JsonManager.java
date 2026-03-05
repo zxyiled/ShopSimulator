@@ -76,79 +76,6 @@ public class JsonManager {
         }
     }
 
-    /**
-     * Add the product to JSON file (load, add, save)
-     * @param product Product to add
-     * @return true if the product was added successfully, false otherwise.
-     */
-
-    public boolean addProduct(Product product) {
-        List<Product> products = loadProducts();
-        products.add(product);
-        return saveProducts(products);
-    }
-
-    /**
-     * Actualize a existent product to JSON file
-     * @param code Code of the product to update
-     * param updatedProduct Product with the new data
-     * @return true if the product was updated successfully, false otherwise.
-     */
-
-    public boolean updateProduct(String code, Product updatedProduct) {
-        List<Product> products = loadProducts();
-        boolean found = false;
-
-        for (int i = 0; i < products.size(); i++) {
-            if (products.get(i).getCode().equalsIgnoreCase(code)) {
-                products.set(i, updatedProduct);
-                found = true;
-                break;
-            }
-        }
-
-        if (found) {
-            return saveProducts(products);
-        } else {
-            logger.warning("Product not found for update: " + code);
-            return false;
-        }
-    }
-
-    /**
-     * Search a product by code in the JSON file
-     * @param code Code of the product to search
-     * @return Optional with the product if the product exist, Optional empty otherwise.
-     */
-
-    public Optional<Product> findProductByCode(String code) {
-        List<Product> products = loadProducts();
-        return products.stream()
-                .filter(p -> p.getCode()
-                        .equalsIgnoreCase(code)).findFirst();
-    }
-
-    /**
-     * Remove a product from JSON file
-     * @param code Code of the product to remove
-     * @return true if the product was removed successfully, false otherwise.
-     */
-
-    public boolean deleteProduct(String code) {
-        List<Product> products = loadProducts();
-        boolean removed = products.removeIf(p -> p.getCode()
-                .equalsIgnoreCase(code));
-
-        if (removed) {
-            saveProducts(products);
-            logger.info("Product removed successfully: " + code);
-            return true;
-        } else {
-            logger.warning("Product not found for remove: " + code);
-            return false;
-        }
-    }
-
     // --- Alerts ---
 
     /**
@@ -193,53 +120,7 @@ public class JsonManager {
         }
     }
 
-    /**
-     * Add an alert to the JSON file
-     * @param alert Alert to add
-     * @return true if was added successfully, false otherwise
-     */
-
-    public boolean addAlert(String alert) {
-        List<String> alerts = loadAlerts();
-        if (!alerts.contains(alert)) {
-            alerts.add(alert);
-            return saveAlerts(alerts);
-        }
-        return true;
-    }
-
-    /**
-     * Clear all the alerts from the JSON file
-     * @return true if were successfully cleared
-     */
-
-    public boolean clearAlerts() {
-        return saveAlerts(new ArrayList<>());
-    }
-
     // --- Utility methods ---
-
-    /**
-     * Save products and also alerts in his respective files
-     * @param products List of products
-     * @param alerts List of alerts
-     * @return true if both were successfully saved
-     */
-
-    public boolean saveAll(List<Product> products, List<String> alerts) {
-        boolean productsSaved = saveProducts(products);
-        boolean alertsSaved = saveAlerts(alerts);
-        return productsSaved && alertsSaved;
-    }
-
-    /**
-     * Verify if exist the file of products
-     * @return true if exist
-     */
-
-    public boolean existProductsFile() {
-        return new File(PRODUCTS_FILE).exists();
-    }
 
     /**
      * Verify if exist the file of alerts
@@ -257,21 +138,6 @@ public class JsonManager {
 
     public String getAlertsFilePath() {
         return new File(ALERTS_FILE).getAbsolutePath();
-    }
-
-    /**
-     * Get the size of the product file in bytes
-     * @return Size in bytes, 0 if file not exist
-     */
-
-    public long getProductsFileSize() {
-        File file = new File(PRODUCTS_FILE);
-        return file.exists() ? file.length() : 0;
-    }
-
-    public long getAlertsFileSize() {
-        File file = new File(ALERTS_FILE);
-        return file.exists() ? file.length() : 0;
     }
 }
 
