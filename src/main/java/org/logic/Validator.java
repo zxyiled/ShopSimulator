@@ -1,6 +1,5 @@
 package org.logic;
 import java.util.List;
-import java.util.Optional;
 
 public class Validator {
 
@@ -34,7 +33,7 @@ public class Validator {
     }
 
     public static boolean validateQuantity(int quantity) {
-        return quantity >= 0;
+        return quantity < 0;
     }
 
     public static boolean validatePrice(double price) {
@@ -47,16 +46,16 @@ public class Validator {
                         .equalsIgnoreCase(code));
     }
 
-    public static boolean validateProductExistent(Optional<Product> product) {
-        return product.isPresent();
+    public static boolean validateProductExistent(Product product) {
+        return product != null;
     }
 
     public static boolean validateEnoughStock(Product product, int requiredQuantity) {
         return product.getQuantity() >= requiredQuantity;
     }
 
-    public static boolean validateQuantityOperation(int quantity) {
-        return quantity > 0;
+    public static boolean isQuantityInvalid(int quantity) {
+        return quantity <= 0;
     }
 
     public static boolean isStockLow(Product product) {
