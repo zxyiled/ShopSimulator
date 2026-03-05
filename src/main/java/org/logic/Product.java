@@ -42,13 +42,6 @@ public class Product {
         this.quantity = quantity;
     }
 
-    public double getPrice(){
-        return price;
-    }
-    public void setPrice(double price){
-        this.price = price;
-    }
-
     @Override
     public String toString() {
         return String.format("Code: %s | Name: %s | Quantity: %d | Price: $%.2f", code, name, quantity, price);
