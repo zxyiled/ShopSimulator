@@ -1,8 +1,8 @@
 package org.app;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
 import static org.Main.logger;
 import org.logic.Product;
 import org.logic.Validator;
@@ -10,6 +10,8 @@ import org.persistence.JsonManager;
 
 public class SysInventory {
 
+    private static final String PRODUCT_EXISTENCE_ERROR = "Product should exist after validation";
+    
     private List<Product> products;
     private List<String> alerts;
     private final JsonManager jsonManager;
@@ -25,9 +27,9 @@ public class SysInventory {
         //Load products and alerts from JSON
         this.products = jsonManager.loadProducts();
         this.alerts = jsonManager.loadAlerts();
-        logger.info("System initialized. Products loaded: " + products.size());
+        logger.info("System initialized. Products loaded: {}");
         if (!alerts.isEmpty()) {
-            logger.info("Pending alerts: " + alerts.size());
+            logger.info("Pending alerts: {}");
         }
     }
 
@@ -36,28 +38,23 @@ public class SysInventory {
     //Register product with validations
     public boolean registerProduct(String code, String name, double price, int quantity) {
 
-        if (!Validator.validateCode(code)) {
-            logger.warning(Validator.getMsgError(Validator.ERROR_CODE));
+        if (!validateAndLogError(Validator.validateCode(code), Validator.ERROR_CODE)) {
             return false;
         }
 
-        if (!Validator.validateName(name)) {
-            logger.warning(Validator.getMsgError(Validator.ERROR_NAME));
+        if (!validateAndLogError(Validator.validateName(name), Validator.ERROR_NAME)) {
             return false;
         }
 
-        if (!Validator.validatePrice(price)) {
-            logger.warning(Validator.getMsgError(Validator.ERROR_PRICE));
+        if (!validateAndLogError(Validator.validatePrice(price), Validator.ERROR_PRICE)) {
             return false;
         }
 
-        if (!Validator.validateQuantity(quantity)) {
-            logger.warning(Validator.getMsgError(Validator.ERROR_QUANTITY));
+        if (validateAndLogError(Validator.validateQuantity(quantity), Validator.ERROR_QUANTITY)) {
             return false;
         }
 
-        if (!Validator.validateProductNonExistent(products, code)) {
-            logger.warning(Validator.getMsgError(Validator.ERROR_EXISTENT));
+        if (!validateAndLogError(Validator.validateProductNonExistent(products, code), Validator.ERROR_EXISTENT)) {
             return false;
         }
 
@@ -76,63 +73,75 @@ public class SysInventory {
         return true;
     }
 
-    //Augment Stock (Wrapper Method)
+    private boolean validateStockOperation(String code, int quantity) {
+        if (validateQuantity(quantity)) {
+            return true;
+        }
+
+        Product product = findProductByCode(code);
+        return isProductMissing(product);
+    }
+
+    private Product getProductForStockOperation(String code) {
+        Product product = findProductByCode(code);
+        if (product == null) {
+            throw new IllegalStateException(PRODUCT_EXISTENCE_ERROR);
+        }
+        return product;
+    }
+
+    //Augment the stock
     public boolean augmentStock(String code, int quantity) {
-        return modifyStock(code, quantity, true);
+        if (validateStockOperation(code, quantity)) {
+            return false;
+        }
+
+        Product product = getProductForStockOperation(code);
+        int newStock = product.getQuantity() + quantity;
+        return updateProductStock(product, newStock, "increased");
     }
 
-    //Reduce stock (Wrapper Method)
+    //Reduce the stock
     public boolean reduceStock(String code, int quantity) {
-        return modifyStock(code, quantity, false);
+        if (validateStockOperation(code, quantity)) {
+            return false;
+        }
+
+        Product product = getProductForStockOperation(code);
+        
+        if (!Validator.validateEnoughStock(product, quantity)) {
+            logger.warning("{} (Current stock: {})");
+            return false;
+        }
+        
+        int newStock = product.getQuantity() - quantity;
+        return updateProductStock(product, newStock, "reduced");
     }
 
-    private boolean modifyStock(String code, int quantity, boolean isIncrement) {
-
-        if (!Validator.validateQuantityOperation(quantity)) {
-            logger.warning(Validator.getMsgError(Validator.ERROR_OPERATION_QUANTITY));
+    private boolean validateQuantity(int quantity) {
+        if (Validator.isQuantityInvalid(quantity)) {
+            String errorMessage = Validator.getMsgError(Validator.ERROR_OPERATION_QUANTITY);
+            logger.warning(errorMessage);
             return false;
         }
+        return true;
+    }
 
-        //Search product
-        Optional<Product> productOpt = searchProductByCode(code);
-        if (!validateProductExists(productOpt)) {
-            return false;
-        }
-
-        Product product = productOpt.get();
-        int currentStock = product.getQuantity();
-        int newStock;
-
-        //Calculate new stock according to operation
-        if (isIncrement) {
-            newStock = currentStock + quantity;
-        } else {
-            //Validate enough stock for reduction
-            if (!Validator.validateEnoughStock(product, quantity)) {
-                logger.warning(Validator.getMsgError(Validator.ERROR_INSUFFICIENT_STOCK) +
-                        " (Current stock: " + currentStock + ")");
-                return false;
-            }
-            newStock = currentStock - quantity;
-        }
-
-        //Validates the new stock isn't negative
-        if (!Validator.validateQuantity(newStock)) {
+    private boolean updateProductStock(Product product, int newStock, String action) {
+        if (Validator.validateQuantity(newStock)) {
             logger.warning("Error: Operation would result in negative stock");
             return false;
         }
 
-        //Actualize the stock
         product.setQuantity(newStock);
 
-        //Save in JSON if autoSave is active
         if (autoSave) {
             jsonManager.saveProducts(products);
         }
 
-        String action = isIncrement ? "increased" : "reduced";
-        logger.info(" Stock " + action + " successfully. New stock of " +
-                product.getName() + ": " + newStock);
+        String logMessage = String.format(" Stock %s successfully. New stock of %s: %d",
+                action, product.getName(), newStock);
+        logger.info(logMessage);
 
         verifyLowStock(product);
         return true;
@@ -140,28 +149,27 @@ public class SysInventory {
 
     //Validate Inventory
     public boolean validateInventory(String code, int requiredQuantity) {
-        Optional<Product> productOpt = searchProductByCode(code);
+        Product product = findProductByCode(code);
 
-        if (!validateProductExists(productOpt)) {
+        if (isProductMissing(product)) {
             return false;
         }
 
-        Product product = productOpt.get();
-
-        if (!Validator.validateQuantityOperation(requiredQuantity)) {
-            logger.warning(Validator.getMsgError(Validator.ERROR_OPERATION_QUANTITY));
+        String errorMessage = Validator.getMsgError(Validator.ERROR_OPERATION_QUANTITY);
+        if (Validator.isQuantityInvalid(requiredQuantity)) {
+            logger.warning(errorMessage);
             return false;
         }
 
         boolean enough = Validator.validateEnoughStock(product, requiredQuantity);
 
         if (enough) {
-            logger.info("Inventory validated successfully. Current stock: " +
-                    product.getQuantity() + " | Required: " + requiredQuantity);
+            logger.info("Inventory validated successfully. Current stock: {} | Required: {}"
+            );
 
         } else {
-            logger.warning(Validator.getMsgError(Validator.ERROR_INSUFFICIENT_STOCK) +
-                    " Current: " + product.getQuantity() + " | Required: " + requiredQuantity);
+            logger.warning("{} Current: {} | Required: {}"
+            );
         }
 
         return enough;
@@ -174,12 +182,14 @@ public class SysInventory {
             return;
         }
 
-        logger.info("=== Product list ===");
-        logger.info("Total: " + products.size() + "products\n");
-        products.forEach(p -> {
-            String lowStock = Validator.isStockLow(p) ? "Low stock " : "";
-            logger.info(p.toString() + lowStock);
-        });
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("=== Product list ===");
+            logger.info(String.format("Total: %d products", products.size()));
+            products.forEach(p -> {
+                String lowStock = Validator.isStockLow(p) ? "Low stock " : "";
+                logger.info(p + lowStock);
+            });
+        }
     }
 
     //Show alerts
@@ -207,6 +217,16 @@ public class SysInventory {
 
     // --- Private Aux methods ---
 
+    private boolean validateAndLogError(boolean validationResult, String errorType) {
+        if (!validationResult) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.warning(Validator.getMsgError(errorType));
+            }
+            return false;
+        }
+        return true;
+    }
+
     //Verify low stock and generate an alert
     private void verifyLowStock(Product product) {
         if (Validator.isStockLow(product)) {
@@ -220,20 +240,28 @@ public class SysInventory {
         }
     }
 
-    //Search product by code
-    public Optional<Product> searchProductByCode(String code) {
+    //Find product by code
+    private Product findProductByCode(String code) {
         return products.stream()
                 .filter(p -> p.getCode()
-                        .equalsIgnoreCase(code)).findFirst();
+                        .equalsIgnoreCase(code))
+                .findFirst()
+                .orElse(null);
     }
 
-    //Validate product exist
-    private boolean validateProductExists(Optional<Product> productOpt) {
-        if (!Validator.validateProductExistent(productOpt)) {
-            logger.warning(Validator.getMsgError(Validator.ERROR_NON_EXISTENT));
-            return false;
+    //Public method for external product search
+    public Optional<Product> searchProductByCode(String code) {
+        return Optional.of(findProductByCode(code));
+    }
+
+    //Check if product is missing
+    private boolean isProductMissing(Product product) {
+        boolean exists = Validator.validateProductExistent(product);
+        if (!exists) {
+            String errorMsg = Validator.getMsgError(Validator.ERROR_NON_EXISTENT);
+            logger.warning(errorMsg);
         }
-        return true;
+        return !exists;
     }
 
     // --- Persistence Methods ---
@@ -266,8 +294,7 @@ public class SysInventory {
     public boolean reloadData() {
         this.products = jsonManager.loadProducts();
         this.alerts = jsonManager.loadAlerts();
-        logger.info("Data reloaded. Products: " + products.size() +
-                ", Alerts: " + alerts.size());
+        logger.info("Data reloaded. Products: {}, Alerts: {}");
         return true;
     }
 
@@ -278,7 +305,7 @@ public class SysInventory {
 
     public void setAutoSave(boolean autoSave) {
         this.autoSave = autoSave;
-        logger.info("Auto-save " + (autoSave ? "activated" : "deactivated"));
+        logger.info("Auto-save {}");
     }
 
     public boolean isAutoSave() {
@@ -287,14 +314,6 @@ public class SysInventory {
 
 
     // --- Getters ---
-    public List<Product> getProducts() {
-        return new ArrayList<>(products);
-    }
-
-    public List<String> getAlerts() {
-        return new ArrayList<>(alerts);
-    }
-
     public int getTotalProducts() {
         return products.size();
     }
