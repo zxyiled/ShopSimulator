@@ -64,16 +64,13 @@ public class SysInventory {
             return true;
         }
 
-        Product product = findProductByCode(code);
-        return isProductMissing(product);
+        Optional<Product> product = searchProductByCode(code);
+        return product.isEmpty();
     }
 
     private Product getProductForStockOperation(String code) {
-        Product product = findProductByCode(code);
-        if (product == null) {
-            throw new IllegalStateException(PRODUCT_EXISTENCE_ERROR);
-        }
-        return product;
+        return searchProductByCode(code)
+                .orElseThrow(() -> new IllegalStateException(PRODUCT_EXISTENCE_ERROR));
     }
 
     //Augment the stock
@@ -131,11 +128,15 @@ public class SysInventory {
 
     //Validate Inventory
     public boolean validateInventory(String code, int requiredQuantity) {
-        Product product = findProductByCode(code);
+        Optional<Product> productOpt = searchProductByCode(code);
 
-        if (isProductMissing(product)) {
+        if (productOpt.isEmpty()) {
+            String errorMsg = Validator.getMsgError(Validator.ERROR_NON_EXISTENT);
+            logger.warning(errorMsg);
             return false;
         }
+
+        Product product = productOpt.get();
 
         String errorMessage = Validator.getMsgError(Validator.ERROR_OPERATION_QUANTITY);
         if (Validator.isQuantityInvalid(requiredQuantity)) {
@@ -222,28 +223,12 @@ public class SysInventory {
         }
     }
 
-    //Find product by code
-    private Product findProductByCode(String code) {
+    //Public method for external product search
+    public Optional<Product> searchProductByCode(String code) {
         return products.stream()
                 .filter(p -> p.getCode()
                         .equalsIgnoreCase(code))
-                .findFirst()
-                .orElse(null);
-    }
-
-    //Public method for external product search
-    public Optional<Product> searchProductByCode(String code) {
-        return Optional.of(findProductByCode(code));
-    }
-
-    //Check if product is missing
-    private boolean isProductMissing(Product product) {
-        boolean exists = Validator.validateProductExistent(product);
-        if (!exists) {
-            String errorMsg = Validator.getMsgError(Validator.ERROR_NON_EXISTENT);
-            logger.warning(errorMsg);
-        }
-        return !exists;
+                .findFirst();
     }
 
     // --- Getters ---
