@@ -11,7 +11,7 @@ import org.logic.Validator;
 public class SysInventory {
 
     private static final String PRODUCT_EXISTENCE_ERROR = "Product should exist after validation";
-    
+
     private final List<Product> products;
     private final List<String> alerts;
 
@@ -99,7 +99,7 @@ public class SysInventory {
             logger.warning("{} (Current stock: {})");
             return false;
         }
-        
+
         int newStock = product.getQuantity() - quantity;
         return updateProductStock(product, newStock, "reduced");
     }
