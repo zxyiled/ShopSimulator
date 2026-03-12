@@ -1,36 +1,25 @@
 package org.app;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import static org.Main.logger;
 import org.logic.Product;
 import org.logic.Validator;
-import org.persistence.JsonManager;
 
 public class SysInventory {
 
     private static final String PRODUCT_EXISTENCE_ERROR = "Product should exist after validation";
     
-    private List<Product> products;
-    private List<String> alerts;
-    private final JsonManager jsonManager;
-    private boolean autoSave;
-    
-    public SysInventory() {
-        this(true);
-    }
+    private final List<Product> products;
+    private final List<String> alerts;
 
-    public SysInventory(boolean autoSave) {
-        this.jsonManager = new JsonManager();
-        this.autoSave = autoSave;
-        //Load products and alerts from JSON
-        this.products = jsonManager.loadProducts();
-        this.alerts = jsonManager.loadAlerts();
-        logger.info("System initialized. Products loaded: {}");
-        if (!alerts.isEmpty()) {
-            logger.info("Pending alerts: {}");
-        }
+    public SysInventory() {
+        //Initialize empty lists for in-memory storage
+        this.products = new ArrayList<>();
+        this.alerts = new ArrayList<>();
+        logger.info("System initialized with in-memory storage. Products loaded: 0");
     }
 
     // --- Public Methods ---
@@ -61,10 +50,7 @@ public class SysInventory {
         Product newProduct = new Product(code.toUpperCase(), name, price, quantity);
         products.add(newProduct);
 
-        //Save in JSON if autoSave is active
-        if (autoSave) {
-            jsonManager.saveProducts(products);
-        }
+        //Auto-save is disabled with in-memory storage
 
         logger.info("Product registered successfully: " + newProduct.getName() +
                 " (Code: " + newProduct.getCode() + ")");
@@ -108,7 +94,7 @@ public class SysInventory {
         }
 
         Product product = getProductForStockOperation(code);
-        
+
         if (!Validator.validateEnoughStock(product, quantity)) {
             logger.warning("{} (Current stock: {})");
             return false;
@@ -134,10 +120,6 @@ public class SysInventory {
         }
 
         product.setQuantity(newStock);
-
-        if (autoSave) {
-            jsonManager.saveProducts(products);
-        }
 
         String logMessage = String.format(" Stock %s successfully. New stock of %s: %d",
                 action, product.getName(), newStock);
@@ -263,55 +245,6 @@ public class SysInventory {
         }
         return !exists;
     }
-
-    // --- Persistence Methods ---
-
-    /**
-     * Save all the data manually (products and alerts)
-     * @return true if was saved correctly
-     */
-
-    public boolean saveData() {
-        boolean productsSaved = jsonManager.saveProducts(products);
-        boolean alertsSaved = jsonManager.saveAlerts(alerts);
-
-        if (productsSaved && alertsSaved) {
-            logger.info("Data saved successfully");
-            logger.info("Products: " + jsonManager.getProductsFilePath());
-            logger.info("Alerts: " + jsonManager.getAlertsFilePath());
-            return true;
-        } else {
-            logger.warning("Failed to save data");
-            return false;
-        }
-    }
-
-    /**
-     * Reload the data from the JSON files
-     * @return true if was reload correctly
-     */
-
-    public boolean reloadData() {
-        this.products = jsonManager.loadProducts();
-        this.alerts = jsonManager.loadAlerts();
-        logger.info("Data reloaded. Products: {}, Alerts: {}");
-        return true;
-    }
-
-    /**
-     * Active or deactivate the auto-save
-     * @param autoSave true to active, false to deactivate
-     */
-
-    public void setAutoSave(boolean autoSave) {
-        this.autoSave = autoSave;
-        logger.info("Auto-save {}");
-    }
-
-    public boolean isAutoSave() {
-        return autoSave;
-    }
-
 
     // --- Getters ---
     public int getTotalProducts() {
