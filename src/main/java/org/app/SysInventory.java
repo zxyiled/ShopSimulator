@@ -39,7 +39,7 @@ public class SysInventory {
             return false;
         }
 
-        if (validateAndLogError(Validator.validateQuantity(quantity), Validator.ERROR_QUANTITY)) {
+        if (!validateAndLogError(!Validator.isQuantityInvalid(quantity), Validator.ERROR_QUANTITY)) {
             return false;
         }
 
@@ -239,5 +239,12 @@ public class SysInventory {
     public int getTotalAlerts() {
         return alerts.size();
     }
-}
 
+    /**
+     * Returns an unmodifiable view of the product list.
+     * Used by the UI layer to display and filter products.
+     */
+    public List<Product> getProducts() {
+        return java.util.Collections.unmodifiableList(products);
+    }
+}
