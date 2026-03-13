@@ -36,43 +36,37 @@ async function lookupProduct() {
 }
 
 /**
- * Increases stock for the looked-up product.
+ * Shared logic for augment and reduce — avoids duplicating
+ * the validation, API call, and feedback pattern.
+ * @param {string} operation  - 'augment' | 'reduce'
+ * @param {string} inputId    - ID of the quantity input element
+ * @param {string} feedbackId - ID of the feedback element
  */
-async function augmentStock() {
+async function handleStockOperation(operation, inputId, feedbackId) {
     const code = document.getElementById('stockCode').value.trim();
-    const qty  = parseInt(document.getElementById('augQty').value);
-    const fb   = document.getElementById('augFeedback');
+    const qty  = parseInt(document.getElementById(inputId).value);
+    const fb   = document.getElementById(feedbackId);
 
     if (isNaN(qty) || qty <= 0)
         return setFeedback(fb, '✕  Enter a valid quantity greater than 0.', false);
 
-    const res = await ProductAPI.updateStock(code, 'augment', qty);
+    const res = await ProductAPI.updateStock(code, operation, qty);
     setFeedback(fb, (res.success ? '✓  ' : '✕  ') + res.message, res.success);
 
     if (res.success) {
-        document.getElementById('augQty').value = '';
-        lookupProduct(); // refresh the preview with the new stock value
+        document.getElementById(inputId).value = '';
+        lookupProduct();
     }
 }
 
-/**
- * Decreases stock for the looked-up product.
- */
-async function reduceStock() {
-    const code = document.getElementById('stockCode').value.trim();
-    const qty  = parseInt(document.getElementById('redQty').value);
-    const fb   = document.getElementById('redFeedback');
+/** Increases stock for the looked-up product. */
+function augmentStock() {
+    return handleStockOperation('augment', 'augQty', 'augFeedback');
+}
 
-    if (isNaN(qty) || qty <= 0)
-        return setFeedback(fb, '✕  Enter a valid quantity greater than 0.', false);
-
-    const res = await ProductAPI.updateStock(code, 'reduce', qty);
-    setFeedback(fb, (res.success ? '✓  ' : '✕  ') + res.message, res.success);
-
-    if (res.success) {
-        document.getElementById('redQty').value = '';
-        lookupProduct();
-    }
+/** Decreases stock for the looked-up product. */
+function reduceStock() {
+    return handleStockOperation('reduce', 'redQty', 'redFeedback');
 }
 
 /**
