@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'jacoco'
     id 'info.solidsoft.pitest' version '1.19.0-rc.1'
     id "org.sonarqube" version "7.1.0.6387"
     id "co.uzzu.dotenv.gradle" version "4.0.0"
@@ -36,12 +37,19 @@ test {
 pitest {
     pitestVersion = '1.15.0'
     junit5PluginVersion = '1.2.1'
-    targetClasses = ['org.app.*', 'org.logic.*', 'org.persistence.*']
-    targetTests = ['org.*']
+    targetClasses = ['org.app.*', 'org.logic.*']
+    targetTests = ['org.logic.*', 'org.app.*']
     threads = 4
     outputFormats = ['HTML']
     timestampedReports = false
     testPlugin = 'junit5'
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+    }
 }
 
 sonar {
@@ -49,7 +57,12 @@ sonar {
         property "sonar.projectKey", "ShopSimulator"
         property "sonar.projectName", "ShopSimulator"
         property "sonar.host.url", "http://localhost:9000"
-        property "sonar.token", ""
+        property "sonar.token", "sqp_bf802d328f4c497098292bb77b9ab303624a297a"
+
+        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
+
+        property "sonar.inclusions", "src/main/java/**/*.java"
+        property "sonar.exclusions", "**/Main.java, **/config/AppConfig.java, **/dto/Dto.java, **/static/**"
     }
 }
 
