@@ -4,7 +4,7 @@ import java.util.List;
 public class Validator {
 
     private Validator() {
-        // Utility class - prevent instantiation
+        throw new UnsupportedOperationException("Utility class");
     }
 
     public static final int MINIMUM_STOCK_ALERT = 5;

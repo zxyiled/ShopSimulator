@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Validator")
@@ -15,6 +14,24 @@ class ValidatorTest {
 
     private Product makeProduct(String code, String name, double price, int quantity) {
         return new Product(code, name, price, quantity);
+    }
+
+    // ── Constructor ───────────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("Constructor")
+    class Constructor {
+
+        @Test
+        @DisplayName("Utility class cannot be instantiated — throws UnsupportedOperationException")
+        void privateConstructorThrows() throws Exception {
+            // Validator is a utility class whose private constructor throws intentionally.
+            // This test gives JaCoCo coverage on that branch and documents the design decision.
+            var constructor = Validator.class.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            assertThrows(java.lang.reflect.InvocationTargetException.class,
+                    constructor::newInstance);
+        }
     }
 
     // ── validateCode ──────────────────────────────────────────────────────────
@@ -39,6 +56,13 @@ class ValidatorTest {
         @DisplayName("Numbers-only code returns true")
         void numbersOnly() {
             assertTrue(Validator.validateCode("001"));
+        }
+
+        @Test
+        @DisplayName("Single character code returns true")
+            // Covers the truthy branch of the regex check with a minimal valid input
+        void singleChar() {
+            assertTrue(Validator.validateCode("A"));
         }
 
         @Test
@@ -88,6 +112,7 @@ class ValidatorTest {
 
         @Test
         @DisplayName("Name with exactly 3 characters returns true")
+            // Covers the lower boundary of the length >= 3 condition
         void exactlyThreeChars() {
             assertTrue(Validator.validateName("CPU"));
         }
@@ -112,6 +137,7 @@ class ValidatorTest {
 
         @Test
         @DisplayName("Whitespace-only name returns false")
+            // trim() reduces it to empty, so the length check fails
         void blankName() {
             assertFalse(Validator.validateName("   "));
         }
@@ -143,6 +169,7 @@ class ValidatorTest {
 
         @Test
         @DisplayName("Very small positive price returns true")
+            // Covers the lower boundary just above zero
         void minimalPrice() {
             assertTrue(Validator.validatePrice(0.01));
         }
@@ -229,6 +256,18 @@ class ValidatorTest {
         void codeExistsDifferentCase() {
             List<Product> products = List.of(makeProduct("ABC", "Widget", 1.0, 10));
             assertFalse(Validator.validateProductNonExistent(products, "abc"));
+        }
+
+        @Test
+        @DisplayName("Returns false when code exists in a list with multiple products")
+            // Covers stream traversal past the first element before finding a match
+        void codeExistsInLargerList() {
+            List<Product> products = List.of(
+                    makeProduct("AAA", "Item1", 1.0, 5),
+                    makeProduct("BBB", "Item2", 1.0, 5),
+                    makeProduct("CCC", "Item3", 1.0, 5)
+            );
+            assertFalse(Validator.validateProductNonExistent(products, "BBB"));
         }
     }
 
@@ -329,6 +368,7 @@ class ValidatorTest {
 
         @Test
         @DisplayName("Returns message for each known error type")
+            // Covers every case branch in the switch expression
         void knownErrors() {
             assertNotNull(Validator.getMsgError(Validator.ERROR_CODE));
             assertNotNull(Validator.getMsgError(Validator.ERROR_NAME));
@@ -342,6 +382,7 @@ class ValidatorTest {
 
         @Test
         @DisplayName("Returns fallback message for unknown error type")
+            // Covers the default branch of the switch expression
         void unknownError() {
             String msg = Validator.getMsgError("unknown_type");
             assertNotNull(msg);
