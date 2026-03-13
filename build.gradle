@@ -57,7 +57,7 @@ sonar {
         property "sonar.projectKey", "ShopSimulator"
         property "sonar.projectName", "ShopSimulator"
         property "sonar.host.url", "http://localhost:9000"
-        property "sonar.token", "sqp_bf802d328f4c497098292bb77b9ab303624a297a"
+        property "sonar.token", ""
 
         property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
 
