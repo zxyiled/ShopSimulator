@@ -39,7 +39,10 @@ public class SysInventory {
             return false;
         }
 
-        if (!validateAndLogError(!Validator.isQuantityInvalid(quantity), Validator.ERROR_QUANTITY)) {
+        if (quantity < 0) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.warning(Validator.getMsgError(Validator.ERROR_QUANTITY));
+            }
             return false;
         }
 
