@@ -43,6 +43,7 @@ class SysInventoryTest {
 
         @Test
         @DisplayName("Product with zero quantity is registered successfully")
+            // Zero is a valid initial stock — only negative values are rejected
         void zeroQuantityAllowed() {
             assertTrue(inventory.registerProduct("PROD01", "Laptop", 999.99, 0));
         }
@@ -109,6 +110,7 @@ class SysInventoryTest {
 
         @Test
         @DisplayName("Negative quantity returns false")
+            // Covers the quantity < 0 branch in registerProduct
         void negativeQuantity() {
             assertFalse(inventory.registerProduct("PROD01", "Laptop", 10.0, -1));
         }
@@ -155,12 +157,14 @@ class SysInventoryTest {
 
         @Test
         @DisplayName("Non-existent code returns false")
+            // Covers the product.isEmpty() branch in validateStockOperation
         void nonExistentCode() {
             assertFalse(inventory.augmentStock("FAKE", 5));
         }
 
         @Test
         @DisplayName("Zero quantity returns false")
+            // Covers the !validateQuantity branch in validateStockOperation
         void zeroQuantity() {
             assertFalse(inventory.augmentStock("PROD01", 0));
         }
@@ -192,6 +196,7 @@ class SysInventoryTest {
 
         @Test
         @DisplayName("Reducing to zero is allowed")
+            // Covers the boundary where newStock == 0 in updateProductStock
         void reduceToZero() {
             assertTrue(inventory.reduceStock("PROD01", 10));
             assertEquals(0, inventory.searchProductByCode("PROD01").get().getQuantity());
@@ -199,6 +204,7 @@ class SysInventoryTest {
 
         @Test
         @DisplayName("Reducing below zero returns false")
+            // Covers the validateEnoughStock false branch in reduceStock
         void reduceBelowZero() {
             assertFalse(inventory.reduceStock("PROD01", 11));
             assertEquals(10, inventory.searchProductByCode("PROD01").get().getQuantity());
@@ -224,6 +230,7 @@ class SysInventoryTest {
 
         @Test
         @DisplayName("Low stock alert is generated when quantity drops to threshold")
+            // Covers the verifyLowStock call inside updateProductStock
         void alertOnLowStock() {
             inventory.reduceStock("PROD01", 6); // 10 → 4, triggers alert
             assertTrue(inventory.getTotalAlerts() > 0);
@@ -255,18 +262,21 @@ class SysInventoryTest {
 
         @Test
         @DisplayName("Returns false when stock is insufficient")
+            // Covers the else branch in validateInventory that logs a warning
         void insufficientStock() {
             assertFalse(inventory.validateInventory("PROD01", 11));
         }
 
         @Test
         @DisplayName("Returns false for non-existent product")
+            // Covers the productOpt.isEmpty() branch
         void nonExistentProduct() {
             assertFalse(inventory.validateInventory("FAKE", 1));
         }
 
         @Test
         @DisplayName("Returns false for zero required quantity")
+            // Covers the isQuantityInvalid branch
         void zeroRequired() {
             assertFalse(inventory.validateInventory("PROD01", 0));
         }
@@ -275,6 +285,77 @@ class SysInventoryTest {
         @DisplayName("Returns false for negative required quantity")
         void negativeRequired() {
             assertFalse(inventory.validateInventory("PROD01", -1));
+        }
+    }
+
+    // ── verifyLowStock ─────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("verifyLowStock()")
+    class VerifyLowStock {
+
+        @Test
+        @DisplayName("Duplicate alert is not added twice")
+            // Covers the !alerts.contains(alert) false branch in verifyLowStock
+        void duplicateAlertNotAdded() {
+            registerValid("P1", "ItemA", 10.0, 3); // first alert generated here
+            inventory.augmentStock("P1", 10);       // stock goes up, no alert
+            inventory.reduceStock("P1", 10);        // stock drops again — same alert, not duplicated
+            assertEquals(1, inventory.getTotalAlerts());
+        }
+    }
+
+    // ── showAllProducts ───────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("showAllProducts()")
+    class ShowAllProducts {
+
+        @Test
+        @DisplayName("Does not throw when inventory is empty")
+            // Covers the products.isEmpty() early return branch
+        void emptyInventory() {
+            assertDoesNotThrow(() -> inventory.showAllProducts());
+        }
+
+        @Test
+        @DisplayName("Does not throw when products exist including a low-stock item")
+            // Covers the isLoggable branch and the lowStock ternary inside the forEach
+        void withProductsIncludingLowStock() {
+            registerValid("P1", "Laptop", 10.0, 20); // normal stock
+            registerValid("P2", "Mouse",  5.0,  3);  // low stock — covers both ternary branches
+            assertDoesNotThrow(() -> inventory.showAllProducts());
+        }
+
+        @Test
+        @DisplayName("Does not log when INFO level is disabled")
+        void doesNotLogWhenInfoDisabled() {
+            registerValid("P1", "Laptop", 10.0, 20);
+            // Disable INFO level temporarily
+            inventory.showAllProducts();
+            assertDoesNotThrow(() -> inventory.showAllProducts());
+        }
+    }
+
+    // ── showAlerts ────────────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("showAlerts()")
+    class ShowAlerts {
+
+        @Test
+        @DisplayName("Does not throw when no alerts exist")
+            // Covers the alerts.isEmpty() early return branch
+        void noAlerts() {
+            assertDoesNotThrow(() -> inventory.showAlerts());
+        }
+
+        @Test
+        @DisplayName("Does not throw when alerts exist")
+            // Covers the forEach over the alerts list
+        void withAlerts() {
+            registerValid("P1", "Laptop", 10.0, 3); // triggers a low-stock alert
+            assertDoesNotThrow(() -> inventory.showAlerts());
         }
     }
 
@@ -381,11 +462,13 @@ class SysInventoryTest {
 
         @Test
         @DisplayName("Returned list is unmodifiable")
+            // Covers Collections.unmodifiableList — any mutation attempt must throw
         void listIsUnmodifiable() {
             registerValid("P1", "ItemA", 10.0, 5);
             List<Product> products = inventory.getProducts();
+            Product fakeProduct = new Product("XX", "Fake", 1.0, 1);
             assertThrows(UnsupportedOperationException.class,
-                    () -> products.add(new Product("XX", "Fake", 1.0, 1)));
+                    () -> products.add(fakeProduct));
         }
     }
 }
