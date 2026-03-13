@@ -25,7 +25,6 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*")   // allows the HTML frontend (same server) to call freely
 public class InventoryController {
 
     private final SysInventory inventory;
