@@ -60,7 +60,7 @@ public class SysInventory {
     }
 
     private boolean validateStockOperation(String code, int quantity) {
-        if (validateQuantity(quantity)) {
+        if (!validateQuantity(quantity)) {
             return true;
         }
 
@@ -111,7 +111,7 @@ public class SysInventory {
     }
 
     private boolean updateProductStock(Product product, int newStock, String action) {
-        if (Validator.validateQuantity(newStock)) {
+        if (newStock < 0) {
             logger.warning("Error: Operation would result in negative stock");
             return false;
         }
@@ -240,10 +240,6 @@ public class SysInventory {
         return alerts.size();
     }
 
-    /**
-     * Returns an unmodifiable view of the product list.
-     * Used by the UI layer to display and filter products.
-     */
     public List<Product> getProducts() {
         return java.util.Collections.unmodifiableList(products);
     }
