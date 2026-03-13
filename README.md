@@ -46,6 +46,7 @@ The application follows a clean, layered architecture:
 - **`org.app.SysInventory`**: Core business logic and inventory management
 - **`org.logic.Product`**: Product entity model
 - **`org.logic.Validator`**: Input validation and business rules
+- **`org.config.AppConfig`**: Spring Boot configuration class
 
 ## Installation & Setup
 
@@ -177,8 +178,10 @@ The application provides comprehensive error handling:
 ### Code Quality
 The project includes SonarQube integration for code quality analysis:
 ```bash
-./gradlew sonarqube
+./gradlew sonar
 ```
+
+Note: SonarQube requires compiled classes. The build.gradle file is configured with the necessary `sonar.java.binaries` properties.
 
 ### Project Structure
 ```
@@ -186,20 +189,44 @@ ShopSimulator/
 ├── src/
 │   ├── main/
 │   │   ├── java/
-│   │   │   └── org/
-│   │   │       ├── Main.java
-│   │   │       ├── controller/
-│   │   │       │   └── InventoryController.java
-│   │   │       ├── dto/
-│   │   │       │   └── Dto.java
-│   │   │       ├── app/
-│   │   │       │   └── SysInventory.java
-│   │   │       ├── logic/
-│   │   │       │   ├── Product.java
-│   │   │       │   └── Validator.java
-│   │   └── resources/
-│   │       └── index.html
+│   │   │   ├── org/
+│   │   │   │   ├── Main.java
+│   │   │   │   ├── controller/
+│   │   │   │   │   └── InventoryController.java
+│   │   │   │   ├── dto/
+│   │   │   │   │   └── Dto.java
+│   │   │   │   ├── app/
+│   │   │   │   │   └── SysInventory.java
+│   │   │   │   ├── logic/
+│   │   │   │   │   ├── Product.java
+│   │   │   │   │   └── Validator.java
+│   │   │   │   └── config/
+│   │   │   │       └── AppConfig.java
+│   │   │   └── resources/
+│   │   │       └── static/
+│   │   │           ├── index.html
+│   │   │           ├── css/
+│   │   │           │   └── styles.css
+│   │   │           └── js/
+│   │   │               ├── api.js
+│   │   │               ├── alerts.js
+│   │   │               ├── navigation.js
+│   │   │               ├── products.js
+│   │   │               ├── register.js
+│   │   │               ├── stock.js
+│   │   │               └── ui.js
 │   └── test/
+│       └── java/
+│           └── org/
+│               ├── app/
+│               │   └── SysInventoryTest.java
+│               ├── controller/
+│               │   └── InventoryControllerTest.java
+│               ├── integration/
+│               │   └── IntegrationTest.java
+│               └── logic/
+│                   ├── ProductTest.java
+│                   └── ValidatorTest.java
 ├── build.gradle
 ├── settings.gradle
 └── README.md
@@ -236,10 +263,13 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - **v2.0-SNAPSHOT**: Web application rewrite
   - Spring Boot REST API implementation
-  - Modern responsive web UI
+  - Modern responsive web UI with JavaScript modules
   - Real-time dashboard with statistics
   - In-memory data storage
   - Enhanced testing with comprehensive coverage
+  - SonarQube integration with proper configuration
+  - Fixed quantity validation to allow zero quantities
+  - Updated project structure with organized static resources
 
 - **v1.0**: Console application
   - Product registration and management
