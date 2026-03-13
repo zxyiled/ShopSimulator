@@ -1,10 +1,10 @@
-# Shop Simulator - Inventory Management System
+# Shop Simulator - Web-Based Inventory Management System
 
-A Java-based console application for managing shop inventory with JSON persistence, low stock alerts, and comprehensive validation.
+A modern Spring Boot web application for managing shop inventory with REST API, responsive web UI, and in-memory data storage.
 
 ## Overview
 
-Shop Simulator is a robust inventory management system designed for small to medium-sized retail businesses. It provides a command-line interface for managing products, tracking stock levels, and maintaining inventory data with automatic JSON persistence.
+Shop Simulator is a full-stack inventory management system designed for small to medium-sized retail businesses. It provides a web-based interface for managing products, tracking stock levels, and maintaining inventory data in memory.
 
 ## Features
 
@@ -13,14 +13,14 @@ Shop Simulator is a robust inventory management system designed for small to med
 - **Stock Control**: Increase or decrease product quantities with validation
 - **Inventory Validation**: Check stock availability for required quantities
 - **Low Stock Alerts**: Automatic alerts when products fall below threshold (5 units)
-- **Data Persistence**: JSON-based storage for products and alerts
-- **Auto-save Mode**: Optional automatic saving after each operation
+- **In-Memory Storage**: Data is stored in application memory during runtime
 
-### Data Management
-- **JSON Persistence**: All data stored in human-readable JSON format
-- **Manual Save/Load**: Explicit control over data persistence
-- **Data Recovery**: Reload functionality to restore from saved files
+### Web Application Features
+- **REST API**: Full CRUD operations via HTTP endpoints
+- **Real-time Dashboard**: Live statistics and inventory overview
+- **Search & Filter**: Find products quickly by code or name
 - **Alert Management**: View and clear low stock notifications
+- **Responsive Design**: Works on desktop and mobile devices
 
 ## Architecture
 
@@ -28,23 +28,24 @@ The application follows a clean, layered architecture:
 
 ```
 ┌─────────────────┐
-│     Main.java   │ ← User Interface Layer
+│   Web UI (HTML) │ ← Frontend Layer
 ├─────────────────┤
-│  SysInventory   │ ← Business Logic Layer
+│ InventoryController │ ← REST API Layer
+├─────────────────┤
+│   SysInventory   │ ← Business Logic Layer
 ├─────────────────┤
 │ Product/Validator│ ← Domain Models
-├─────────────────┤
-│   JsonManager   │ ← Data Persistence Layer
 └─────────────────┘
 ```
 
 ### Package Structure
 
-- **`org.Main`**: Main application entry point and user interface
+- **`org.Main`**: Spring Boot application entry point
+- **`org.controller.InventoryController`**: REST API endpoints
+- **`org.dto.Dto`**: Data transfer objects for API requests/responses
 - **`org.app.SysInventory`**: Core business logic and inventory management
 - **`org.logic.Product`**: Product entity model
 - **`org.logic.Validator`**: Input validation and business rules
-- **`org.persistence.JsonManager`**: JSON file operations and data persistence
 
 ## Installation & Setup
 
@@ -67,57 +68,82 @@ cd ShopSimulator
 
 3. Run the application:
 ```bash
-./gradlew run
+./gradlew bootRun
 ```
+
+4. Access the web interface:
+Open your browser and navigate to `http://localhost:8080`
 
 ### Dependencies
 
+- **Spring Boot**: Web framework with embedded Tomcat server
 - **Jackson JSON Processor**: For JSON serialization/deserialization
 - **JUnit 5**: For unit testing
 - **Gradle**: Build automation and dependency management
 
-## Usage Guide
+## API Endpoints
 
-### Main Menu Options
+### Product Management
+- `GET /api/products` - List all products
+- `POST /api/products` - Register new product
+- `GET /api/products/{code}` - Get product by code
+- `PATCH /api/products/{code}/stock` - Update stock quantity
+- `GET /api/products/{code}/validate` - Validate stock availability
 
-1. **Register Product**: Add new products to inventory
-   - Code: Unique alphanumeric identifier
-   - Name: Product name (min 3 characters)
-   - Price: Positive decimal value
-   - Initial Quantity: Non-negative integer
+### Statistics & Alerts
+- `GET /api/stats` - Get inventory statistics
+- `GET /api/alerts` - Get low stock alerts
+- `DELETE /api/alerts` - Clear all alerts
 
-2. **Augment Stock**: Increase product quantity
-   - Enter product code and quantity to add
+### Request/Response Examples
 
-3. **Reduce Stock**: Decrease product quantity
-   - Enter product code and quantity to remove
-   - Validates sufficient stock before reduction
+#### Register Product
+```json
+POST /api/products
+{
+  "code": "PROD001",
+  "name": "Laptop",
+  "price": 999.99,
+  "quantity": 10
+}
+```
 
-4. **Validate Inventory**: Check stock availability
-   - Verify if required quantity is available
+#### Update Stock
+```json
+PATCH /api/products/PROD001/stock
+{
+  "operation": "augment",
+  "quantity": 5
+}
+```
 
-5. **Show All Products**: Display complete product list
-   - Shows low stock warnings where applicable
+#### API Response Format
+```json
+{
+  "success": true,
+  "message": "Product registered successfully",
+  "data": { ... }
+}
+```
 
-6. **Show Alerts**: View active low stock notifications
+## Web Interface
 
-7. **Show Low Stock Products**: Filter products below threshold
+### Navigation
+- **Products**: View all products with search and filtering
+- **Register**: Add new products to inventory
+- **Stock**: Manage stock levels (increase/decrease)
+- **Alerts**: View and manage low stock notifications
 
-8. **Clear Alerts**: Remove all active notifications
-
-9. **Save Data Manually**: Explicit data persistence
-
-10. **Reload Data**: Restore from JSON files
-
-11. **Toggle Auto-save**: Enable/disable automatic saving
-
-0. **Exit**: Save data and exit application
+### Features
+- **Real-time Statistics**: Dashboard showing total products, low stock items, and total value
+- **Search Functionality**: Filter products by code or name
+- **Stock Management**: Easy-to-use interface for stock operations
+- **Alert System**: Visual indicators for low stock items
+- **Responsive Design**: Optimized for both desktop and mobile use
 
 ### Data Storage
 
-All data is stored in the `data/` directory:
-- `products.json`: Product inventory data
-- `alerts.json`: Low stock alert notifications
+Data is stored in application memory during runtime. When the application restarts, all data is reset and the inventory starts empty.
 
 ## Validation Rules
 
@@ -159,20 +185,21 @@ The project includes SonarQube integration for code quality analysis:
 ShopSimulator/
 ├── src/
 │   ├── main/
-│   │   └── java/
-│   │       └── org/
-│   │           ├── Main.java
-│   │           ├── app/
-│   │           │   └── SysInventory.java
-│   │           ├── logic/
-│   │           │   ├── Product.java
-│   │           │   └── Validator.java
-│   │           └── persistence/
-│   │               └── JsonManager.java
+│   │   ├── java/
+│   │   │   └── org/
+│   │   │       ├── Main.java
+│   │   │       ├── controller/
+│   │   │       │   └── InventoryController.java
+│   │   │       ├── dto/
+│   │   │       │   └── Dto.java
+│   │   │       ├── app/
+│   │   │       │   └── SysInventory.java
+│   │   │       ├── logic/
+│   │   │       │   ├── Product.java
+│   │   │       │   └── Validator.java
+│   │   └── resources/
+│   │       └── index.html
 │   └── test/
-├── data/
-│   ├── products.json
-│   └── alerts.json
 ├── build.gradle
 ├── settings.gradle
 └── README.md
@@ -186,12 +213,10 @@ Modify `MINIMUM_STOCK_ALERT` in `Validator.java` to change the alert threshold:
 public static final int MINIMUM_STOCK_ALERT = 5; // Default: 5 units
 ```
 
-### File Paths
-Data storage paths are configured in `JsonManager.java`:
-```java
-private static final String DATA_DIRECTORY = "data";
-private static final String PRODUCTS_FILE = DATA_DIRECTORY + File.separator + "products.json";
-private static final String ALERTS_FILE = DATA_DIRECTORY + File.separator + "alerts.json";
+### Server Port
+Default port is 8080. Override with:
+```bash
+./gradlew bootRun --args="--server.port=8081"
 ```
 
 ## Contributing
@@ -201,6 +226,7 @@ private static final String ALERTS_FILE = DATA_DIRECTORY + File.separator + "ale
 3. Include comprehensive error handling
 4. Write unit tests for new functionality
 5. Update documentation for API changes
+6. Test web interface functionality
 
 ## License
 
@@ -208,7 +234,14 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **v1.0-SNAPSHOT**: Initial release with core inventory management features
+- **v2.0-SNAPSHOT**: Web application rewrite
+  - Spring Boot REST API implementation
+  - Modern responsive web UI
+  - Real-time dashboard with statistics
+  - In-memory data storage
+  - Enhanced testing with comprehensive coverage
+
+- **v1.0**: Console application
   - Product registration and management
   - Stock control operations
   - JSON persistence
