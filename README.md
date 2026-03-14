@@ -1,10 +1,10 @@
-# Shop Simulator - Web-Based Inventory Management System
+# Shop Simulator - REST API Inventory Management System
 
-A modern Spring Boot web application for managing shop inventory with REST API, responsive web UI, and in-memory data storage.
+A modern Spring Boot REST API application for managing shop inventory with comprehensive endpoints and in-memory data storage.
 
 ## Overview
 
-Shop Simulator is a full-stack inventory management system designed for small to medium-sized retail businesses. It provides a web-based interface for managing products, tracking stock levels, and maintaining inventory data in memory.
+Shop Simulator is a backend inventory management system designed for small to medium-sized retail businesses. It provides RESTful API endpoints for managing products, tracking stock levels, and maintaining inventory data in memory.
 
 ## Features
 
@@ -15,12 +15,12 @@ Shop Simulator is a full-stack inventory management system designed for small to
 - **Low Stock Alerts**: Automatic alerts when products fall below threshold (5 units)
 - **In-Memory Storage**: Data is stored in application memory during runtime
 
-### Web Application Features
+### API Features
 - **REST API**: Full CRUD operations via HTTP endpoints
-- **Real-time Dashboard**: Live statistics and inventory overview
-- **Search & Filter**: Find products quickly by code or name
-- **Alert Management**: View and clear low stock notifications
-- **Responsive Design**: Works on desktop and mobile devices
+- **Real-time Statistics**: Inventory statistics and overview endpoints
+- **Search & Filter**: Find products quickly by code or name via API
+- **Alert Management**: View and clear low stock notifications via API
+- **JSON Responses**: Structured data format for easy integration
 
 ## Architecture
 
@@ -28,14 +28,13 @@ The application follows a clean, layered architecture:
 
 ```
 ┌─────────────────┐
-│   Web UI (HTML) │ ← Frontend Layer
-├─────────────────┤
 │ InventoryController │ ← REST API Layer
 ├─────────────────┤
-│   SysInventory   │ ← Business Logic Layer
+│   SysInventory  │ ← Business Logic Layer
 ├─────────────────┤
 │ Product/Validator│ ← Domain Models
 └─────────────────┘
+
 ```
 
 ### Package Structure
