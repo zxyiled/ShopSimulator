@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Inventory System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app">
+
+    <!-- ── Sidebar ──────────────────────────────────────────────── -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="icon">▣</div>
+            <div class="title">INVENTORY</div>
+            <div class="sub">System v1.0</div>
+        </div>
+        <div class="sidebar-divider"></div>
+        <div class="nav-label">Navigation</div>
+
+        <button class="nav-btn active" data-page="products" onclick="navigate('products')">⊟  Products</button>
+        <button class="nav-btn"        data-page="register" onclick="navigate('register')">⊕  Register</button>
+        <button class="nav-btn"        data-page="stock"    onclick="navigate('stock')">⇅  Stock</button>
+        <button class="nav-btn"        data-page="alerts"   onclick="navigate('alerts')" id="navAlerts">⚑  Alerts</button>
+
+        <div class="sidebar-spacer"></div>
+        <div class="sidebar-footer">Shop Simulator © 2025</div>
+    </aside>
+
+    <!-- ── Main Content ─────────────────────────────────────────── -->
+    <main class="content">
+
+        <!-- PAGE: Products -->
+        <section id="page-products">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Products</div>
+                    <div class="page-sub">Complete inventory registry</div>
+                </div>
+                <input type="text" class="search-input" placeholder="Search by code or name…"
+                       oninput="filterTable(this.value)">
+            </div>
+
+            <div class="stats-row">
+                <div class="card stat-card">
+                    <div class="stat-val" style="color:var(--accent)"  id="statTotal">—</div>
+                    <div class="stat-lbl">Total products</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-val" style="color:var(--warning)" id="statLow">—</div>
+                    <div class="stat-lbl">Low stock items</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-val" style="color:var(--success)" id="statValue">—</div>
+                    <div class="stat-lbl">Total stock value</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-lbl">Product Registry</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                        <tr class="empty-row"><td colspan="5">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE: Register -->
+        <section id="page-register" class="hidden">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Register Product</div>
+                    <div class="page-sub">Add a new item to your inventory</div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:24px; align-items:flex-start">
+                <div class="card" style="flex:1; max-width:500px">
+                    <div class="section-lbl">Product Details</div>
+                    <div class="hdiv"></div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="field-lbl">Product Code</label>
+                            <input type="text" id="regCode" placeholder="e.g. PROD001">
+                        </div>
+                        <div class="form-group">
+                            <label class="field-lbl">Product Name</label>
+                            <input type="text" id="regName" placeholder="Min. 3 characters">
+                        </div>
+                        <div class="form-group">
+                            <label class="field-lbl">Price (USD)</label>
+                            <input type="number" id="regPrice" placeholder="0.00" min="0" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="field-lbl">Initial Stock</label>
+                            <input type="number" id="regQty" placeholder="0" min="0">
+                        </div>
+                    </div>
+                    <div class="hdiv"></div>
+                    <div class="feedback" id="regFeedback"></div>
+                    <div class="btn-row">
+                        <button class="btn btn-primary"   onclick="registerProduct()">Register Product</button>
+                        <button class="btn btn-secondary" onclick="clearRegForm()">Clear</button>
+                    </div>
+                </div>
+
+                <div class="card" style="width:220px">
+                    <div class="section-lbl">Requirements</div>
+                    <div class="hdiv"></div>
+                    <div style="display:flex; flex-direction:column; gap:14px">
+                        <div><div style="font-size:12px;font-weight:600">Code</div><div style="font-size:10px;color:var(--muted)">Letters and numbers only</div></div>
+                        <div><div style="font-size:12px;font-weight:600">Name</div><div style="font-size:10px;color:var(--muted)">Minimum 3 characters</div></div>
+                        <div><div style="font-size:12px;font-weight:600">Price</div><div style="font-size:10px;color:var(--muted)">Greater than $0.00</div></div>
+                        <div><div style="font-size:12px;font-weight:600">Stock</div><div style="font-size:10px;color:var(--muted)">0 or more units</div></div>
+                    </div>
+                    <div class="hdiv"></div>
+                    <div style="font-size:11px;color:var(--muted);font-style:italic">Codes are stored in uppercase automatically.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE: Stock -->
+        <section id="page-stock" class="hidden">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Stock Management</div>
+                    <div class="page-sub">Increase or decrease product stock levels</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-lbl">Product Lookup</div>
+                <div class="lookup-row">
+                    <input type="text" id="stockCode" placeholder="Enter product code…" style="width:280px">
+                    <button class="btn btn-secondary" onclick="lookupProduct()">Look up</button>
+                </div>
+                <div class="lookup-preview" id="lookupPreview">Enter a product code and press Look up.</div>
+            </div>
+
+            <div class="ops-grid">
+                <div class="card">
+                    <div class="op-icon" style="color:var(--success)">↑</div>
+                    <div class="op-title">Increase Stock</div>
+                    <label class="field-lbl">Units to add</label>
+                    <input type="number" id="augQty" placeholder="e.g. 10" min="1" style="width:100%; margin-top:6px">
+                    <div class="feedback" id="augFeedback"></div>
+                    <button class="btn btn-success" style="width:100%; margin-top:4px" onclick="augmentStock()">Add Stock</button>
+                </div>
+                <div class="card">
+                    <div class="op-icon" style="color:var(--danger)">↓</div>
+                    <div class="op-title">Decrease Stock</div>
+                    <label class="field-lbl">Units to remove</label>
+                    <input type="number" id="redQty" placeholder="e.g. 5" min="1" style="width:100%; margin-top:6px">
+                    <div class="feedback" id="redFeedback"></div>
+                    <button class="btn btn-danger" style="width:100%; margin-top:4px" onclick="reduceStock()">Remove Stock</button>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:20px">
+                <div class="section-lbl">Inventory Validation</div>
+                <p style="font-size:12px; color:var(--muted); margin-bottom:12px">
+                    Check whether there is enough stock to meet a required quantity.
+                </p>
+                <div class="lookup-row">
+                    <input type="text"   id="valCode" placeholder="Product code"  style="width:180px">
+                    <input type="number" id="valQty"  placeholder="Required qty"  style="width:130px" min="1">
+                    <button class="btn btn-secondary" onclick="validateStock()">Validate</button>
+                </div>
+                <div class="feedback" id="valFeedback"></div>
+            </div>
+        </section>
+
+        <!-- PAGE: Alerts -->
+        <section id="page-alerts" class="hidden">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Alerts</div>
+                    <div class="page-sub">Products with low stock levels</div>
+                </div>
+                <button class="btn btn-danger" onclick="clearAlerts()">Clear All Alerts</button>
+            </div>
+
+            <div class="alert-summary">
+                <div class="alert-icon">⚑</div>
+                <div>
+                    <div class="alert-count" id="alertCount">0 active alerts</div>
+                    <div class="alert-sub">Products at or below 5 units trigger an alert.</div>
+                </div>
+            </div>
+
+            <div id="alertsList"></div>
+        </section>
+
+    </main>
+</div>
+
+<!-- Scripts — order matters: api and ui must load before the page modules -->
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/navigation.js"></script>
+<script src="js/products.js"></script>
+<script src="js/register.js"></script>
+<script src="js/stock.js"></script>
+<script src="js/alerts.js"></script>
+
+<script>
+    // Bootstrap: load the default page on first visit
+    loadProductsPage();
+</script>
+</body>
+</html>
