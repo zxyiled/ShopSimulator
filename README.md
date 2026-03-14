@@ -34,7 +34,6 @@ The application follows a clean, layered architecture:
 ├─────────────────┤
 │ Product/Validator│ ← Domain Models
 └─────────────────┘
-
 ```
 
 ### Package Structure
