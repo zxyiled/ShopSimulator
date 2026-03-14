@@ -278,6 +278,35 @@ This project is licensed under the MIT License - see the LICENSE file for detail
   - Low stock alerts
   - Comprehensive validation
 
+## Code Quality & Analysis
+
+This section documents the code quality analysis and technical debt tracking throughout the project development.
+
+### Initial Analysis
+The following image shows the first analysis performed on the initial codebase:
+
+![First Analysis](assets/images/firstanalysis.png)
+
+### Initial Technical Debt
+The initial technical debt identified due to bad practices in the early development:
+
+![First Technical Debt](assets/images/firsttechnicaldebt.png)
+
+### Mutation Testing
+Mutation testing performed with PITest after project updates and improvements:
+
+![Mutation Test](assets/images/mutationtest.png)
+
+### Updated SonarQube Analysis
+Recent SonarQube scan showing the current state of code quality:
+
+![Updated SonarQube Analysis](assets/images/sonarqupdated.png)
+
+### Current Technical Debt
+The current technical debt status after all improvements and refactoring:
+
+![Current Technical Debt](assets/images/newtechnicaldebt.png)
+
 ## Support
 
 For issues, questions, or contributions, please refer to the project's issue tracker or contact the development team.
