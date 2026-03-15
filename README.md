@@ -216,7 +216,7 @@ ShopSimulator/
 ├── gradlew
 ├── settings.gradle
 ├── gradlew.bat
-├──README.md
+├── README.md
 └── settings.gradle
 ```
 
