@@ -184,7 +184,7 @@ Note: SonarQube requires compiled classes. The build.gradle file is configured w
 ### Project Structure
 ```
 ShopSimulator/
-├── src/
+└── src/
 │   ├── main/
 │   │   ├── java/
 │   │   │   ├── org/
@@ -200,19 +200,6 @@ ShopSimulator/
 │   │   │   │   │   └── Validator.java
 │   │   │   │   └── config/
 │   │   │   │       └── AppConfig.java
-│   │   │   └── resources/
-│   │   │       └── static/
-│   │   │           ├── index.html
-│   │   │           ├── css/
-│   │   │           │   └── styles.css
-│   │   │           └── js/
-│   │   │               ├── api.js
-│   │   │               ├── alerts.js
-│   │   │               ├── navigation.js
-│   │   │               ├── products.js
-│   │   │               ├── register.js
-│   │   │               ├── stock.js
-│   │   │               └── ui.js
 │   └── test/
 │       └── java/
 │           └── org/
@@ -221,13 +208,16 @@ ShopSimulator/
 │               ├── controller/
 │               │   └── InventoryControllerTest.java
 │               ├── integration/
-│               │   └── IntegrationTest.java
 │               └── logic/
 │                   ├── ProductTest.java
 │                   └── ValidatorTest.java
+├── .gitignore
 ├── build.gradle
+├── gradlew
 ├── settings.gradle
-└── README.md
+├── gradlew.bat
+├──README.md
+└── settings.gradle
 ```
 
 ## Configuration
