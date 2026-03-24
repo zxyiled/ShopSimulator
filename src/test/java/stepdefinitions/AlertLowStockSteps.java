@@ -28,6 +28,6 @@ public class AlertLowStockSteps {
     @Then("an alert should be shown")
     public void an_alert_should_be_shown() {
         assertTrue(validationResult, "The expected validation should be successful" +
-                product.getQuantity() + "and required quantity" + requiredQuantity);
+                product.getQuantity() + "and required quantity should be greater or equal than" + requiredQuantity);
     }
 }
