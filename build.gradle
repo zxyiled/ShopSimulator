@@ -24,8 +24,8 @@ dependencies {
 
     //Testing
     testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation("io.cucumber:cucumber-java:7.18.0")
-    testImplementation("io.cucumber:cucumber-junit-platform-engine:7.18.0")
+    testImplementation("io.cucumber:cucumber-java:7.34.2")
+    testImplementation("io.cucumber:cucumber-junit-platform-engine:7.34.2")
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.pitest:pitest-junit5-plugin:1.2.1'
@@ -65,6 +65,12 @@ sonar {
 
         property "sonar.inclusions", "src/main/java/**/*.java"
         property "sonar.exclusions", "**/Main.java, **/config/AppConfig.java"
+    }
+
+    tasks.register("acceptanceTest", Test) {
+        useJUnitPlatform()
+        description = "Runs Cucumber acceptance tests."
+        group = "verification"
     }
 }
 
