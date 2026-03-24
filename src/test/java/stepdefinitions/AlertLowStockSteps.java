@@ -16,7 +16,7 @@ public class AlertLowStockSteps {
 
     @Given("a product exists with quantity {int}")
     public void a_product_exists_with_quantity(int quantity) {
-        product = new Product("TEST001", "Test Product", quantity, (int) 10.0);
+        product = new Product("TEST001", "Test Product", 10.0, quantity);
     }
 
     @When("I validate stock for quantity {int}")

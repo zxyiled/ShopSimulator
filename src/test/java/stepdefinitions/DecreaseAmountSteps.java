@@ -15,13 +15,17 @@ public class DecreaseAmountSteps {
 
     @Given("a product exists with quantity {int}")
     public void a_product_exists_with_quantity(int quantity) {
-        product = new Product("TEST001", "Test Product", quantity, (int) 10.0);
+        product = new Product("TEST001", "Test Product", 10.0, quantity);
     }
 
     @When("I decrease stock for quantity {int}")
     public void i_decrease_stock_for_quantity(int quantity) {
         this.requiredQuantity = quantity;
         validationResult = Validator.validateEnoughStock(product, quantity);
+
+        if (validationResult) {
+            product.setQuantity(product.getQuantity() - quantity);
+        }
     }
 
     @Then("the stock should be {int}")
