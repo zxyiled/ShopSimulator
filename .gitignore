@@ -44,7 +44,3 @@ bin/
 
 ### Environment Variables ###
 .env
-
-### Ignore data files
-/data/
-*.json
