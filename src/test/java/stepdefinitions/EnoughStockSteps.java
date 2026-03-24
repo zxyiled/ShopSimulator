@@ -15,15 +15,12 @@ public class EnoughStockSteps {
 
     @Given("a product exists with quantity {int}")
     public void a_product_exists_with_quantity(int quantity) {
-
         product = new Product("TEST001", "Test Product", quantity, (int) 10.0);
     }
 
     @When("I validate stock for quantity {int}")
     public void i_validate_stock_for_quantity(int quantity) {
-
         this.requiredQuantity = quantity;
-
         validationResult = Validator.validateEnoughStock(product, quantity);
     }
 
