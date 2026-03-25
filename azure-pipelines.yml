@@ -1,0 +1,53 @@
+trigger:
+  - main
+
+pool:
+  name: LocalPool   # Your local agent registered in Azure DevOps
+
+variables:
+  projectDir: 'ShopSimulator'
+
+steps:
+  # Step 1: Checkout the code
+  - checkout: self
+
+  # Step 2: Check Java version installed on the local agent
+  - script: java -version
+    displayName: "Check Java version (using local agent's)"
+    workingDirectory: $(projectDir)
+
+  # Step 3: Run build and unit tests
+  - task: Gradle@9
+    inputs:
+      workingDirectory: '$(projectDir)'
+      gradleWrapperFile: '$(projectDir)/gradlew'
+      gradleOptions: '-Dfile.encoding=UTF-8 -Xmx3072m'
+      publishJUnitResults: true
+      testResultsFiles: '**/build/test-results/test/TEST-*.xml'
+      tasks: 'clean build test'
+
+  # Step 4: Run acceptance tests (Cucumber)
+  - task: Gradle@9
+    inputs:
+      workingDirectory: '$(projectDir)'
+      gradleWrapperFile: '$(projectDir)/gradlew'
+      gradleOptions: '-Dfile.encoding=UTF-8'
+      tasks: 'acceptanceTest'
+      testResultsFiles: '**/build/test-results/acceptanceTest/TEST-*.xml'
+      publishJUnitResults: true
+
+  # Step 5: Run mutation tests (Pitest)
+  - task: Gradle@9
+    inputs:
+      workingDirectory: '$(projectDir)'
+      gradleWrapperFile: '$(projectDir)/gradlew'
+      gradleOptions: '-Dfile.encoding=UTF-8'
+      tasks: 'pitest'
+
+  # Step 6 (Optional): SonarQube analysis
+  # - task: Gradle@9
+  #   inputs:
+  #     workingDirectory: '$(projectDir)'
+  #     gradleWrapperFile: '$(projectDir)/gradlew'
+  #     gradleOptions: '-Dfile.encoding=UTF-8'
+  #     tasks: 'sonar'
