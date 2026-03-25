@@ -5,12 +5,11 @@ import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import org.logic.Product;
 import org.logic.Validator;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AlertLowStockSteps {
 
     private Product product;
-    private int requiredQuantity;
     private boolean validationResult;
 
     @Given("an alert scenario with product quantity {int}")
@@ -18,15 +17,14 @@ public class AlertLowStockSteps {
         product = new Product("TEST001", "Test Product", 10.0, quantity);
     }
 
-    @When("I validate the stock for quantity {int}")
-    public void i_validate_the_stock_for_quantity(int quantity) {
-        this.requiredQuantity = quantity;
-        validationResult = Validator.validateEnoughStock(product, quantity);
+    @When("I check if stock is low")
+    public void i_check_if_stock_is_low() {
+        validationResult = Validator.isStockLow(product);
     }
 
     @Then("an alert should be shown")
     public void an_alert_should_be_shown() {
-        assertFalse(validationResult, "Alert should show when stock is insufficient. Current stock: " +
-                product.getQuantity() + ", Required: " + requiredQuantity);
+        assertTrue(validationResult, "Alert should show when stock is low. Current stock: " +
+                product.getQuantity() + ", Minimum: " + Validator.MINIMUM_STOCK_ALERT);
     }
 }
