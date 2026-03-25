@@ -30,6 +30,7 @@ public class DecreaseAmountSteps {
 
     @Then("the stock should be {int}")
     public void the_stock_should_be(int quantity) {
-        assertEquals(quantity, product.getQuantity());
+        assertEquals(quantity, product.getQuantity(),
+                "Expected stock: " + quantity + ", but actual stock: " + product.getQuantity());
     }
 }

@@ -67,7 +67,7 @@ public class Validator {
         return switch (typeError) {
             case ERROR_CODE -> "Error: Invalid Code. Has to contain only letters and numbers";
             case ERROR_NAME -> "Error: Invalid Name. Minimum length is 3 characters";
-            case ERROR_QUANTITY -> "Error: Invalid Quantity. Has to be greater than or equal to 0";
+            case ERROR_QUANTITY -> "Error: Invalid Quantity. Has to be greater than 0";
             case ERROR_PRICE -> "Error: Invalid Price. Has to be greater than 0";
             case ERROR_EXISTENT -> "Error: The product already exists";
             case ERROR_NON_EXISTENT -> "Error: The product does not exist or was not found";

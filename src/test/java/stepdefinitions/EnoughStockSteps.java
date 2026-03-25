@@ -13,8 +13,8 @@ public class EnoughStockSteps {
     private int requiredQuantity;
     private boolean validationResult;
 
-    @Given("a product exists with quantity {int}")
-    public void a_product_exists_with_quantity(int quantity) {
+    @Given("a test product exists with quantity {int}")
+    public void a_test_product_exists_with_quantity(int quantity) {
         product = new Product("TEST001", "Test Product", 10.0, quantity);
     }
 
@@ -24,9 +24,9 @@ public class EnoughStockSteps {
         validationResult = Validator.validateEnoughStock(product, quantity);
     }
 
-    @Then("The validation should be successful")
+    @Then("the validation should be successful")
     public void the_validation_should_be_successful() {
-        assertTrue(validationResult, "The expected validation should be successful" +
-                product.getQuantity() + "and required quantity" + requiredQuantity);
+        assertTrue(validationResult, "The expected validation should be successful. Current stock: " +
+                product.getQuantity() + ", Required: " + requiredQuantity);
     }
 }
