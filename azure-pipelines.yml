@@ -10,6 +10,8 @@ variables:
 steps:
   # Step 1: Checkout the code
   - checkout: self
+    timeoutInMinutes: 10
+    retryCountOnTaskFailure: 3
 
   # Step 2: Check Java version installed on the local agent
   - script: java -version
