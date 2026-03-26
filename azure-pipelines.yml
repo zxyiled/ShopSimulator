@@ -5,7 +5,7 @@ pool:
   name: LocalPool   # Your local agent registered in Azure DevOps
 
 variables:
-  projectDir: 'ShopSimulator'
+  projectDir: '.'
 
 steps:
   # Step 1: Checkout the code
@@ -17,7 +17,7 @@ steps:
     workingDirectory: $(projectDir)
 
   # Step 3: Run build and unit tests
-  - task: Gradle@9
+  - task: Gradle@4
     inputs:
       workingDirectory: '$(projectDir)'
       gradleWrapperFile: '$(projectDir)/gradlew'
@@ -27,7 +27,7 @@ steps:
       tasks: 'clean build test'
 
   # Step 4: Run acceptance tests (Cucumber)
-  - task: Gradle@9
+  - task: Gradle@4
     inputs:
       workingDirectory: '$(projectDir)'
       gradleWrapperFile: '$(projectDir)/gradlew'
@@ -37,7 +37,7 @@ steps:
       publishJUnitResults: true
 
   # Step 5: Run mutation tests (Pitest)
-  - task: Gradle@9
+  - task: Gradle@4
     inputs:
       workingDirectory: '$(projectDir)'
       gradleWrapperFile: '$(projectDir)/gradlew'
@@ -45,7 +45,7 @@ steps:
       tasks: 'pitest'
 
   # Step 6 (Optional): SonarQube analysis
-  # - task: Gradle@9
+  # - task: Gradle@4
   #   inputs:
   #     workingDirectory: '$(projectDir)'
   #     gradleWrapperFile: '$(projectDir)/gradlew'
