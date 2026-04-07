@@ -53,8 +53,6 @@ public class SysInventory {
         Product newProduct = new Product(code.toUpperCase(), name, price, quantity);
         products.add(newProduct);
 
-        //Auto-save is disabled with in-memory storage
-
         logger.info("Product registered successfully: " + newProduct.getName() +
                 " (Code: " + newProduct.getCode() + ")");
 
@@ -64,7 +62,7 @@ public class SysInventory {
 
     private boolean validateStockOperation(String code, int quantity) {
         if (!validateQuantity(quantity)) {
-            return true;
+            return false;
         }
 
         Optional<Product> product = searchProductByCode(code);
