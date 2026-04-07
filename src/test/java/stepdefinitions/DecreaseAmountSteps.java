@@ -22,10 +22,8 @@ public class DecreaseAmountSteps {
     public void i_decrease_stock_for_quantity(int quantity) {
         this.requiredQuantity = quantity;
         validationResult = Validator.validateEnoughStock(product, quantity);
-
-        if (validationResult) {
-            product.setQuantity(product.getQuantity() - quantity);
-        }
+        
+        product.setQuantity(product.getQuantity() - quantity);
     }
 
     @Then("the stock should be {int}")

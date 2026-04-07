@@ -33,7 +33,7 @@ public class Validator {
     }
 
     public static boolean validateQuantity(int quantity) {
-        return quantity < 0;
+        return quantity >= 0;
     }
 
     public static boolean validatePrice(double price) {
@@ -59,7 +59,7 @@ public class Validator {
     }
 
     public static boolean isStockLow(Product product) {
-        return product.getQuantity() <= MINIMUM_STOCK_ALERT;
+        return product.getQuantity() >= 0 && product.getQuantity() <= MINIMUM_STOCK_ALERT;
     }
 
     //Get custom error message
