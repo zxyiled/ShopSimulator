@@ -1,8 +1,11 @@
-Feature: Show an Alert when the stock is low
+Feature: Low Stock Alert System
 
-  Scenario: Successful alert when stock is below minimum
+  As a store manager
+  I want to be notified when product stock is running low
+  So I can reorder products before they run out
 
-    Given an alert scenario with product quantity 3
-    When I check if stock is low
-    Then an alert should be shown
+  Scenario: Alert is displayed when stock falls below minimum threshold
+    Given a product for low stock alert has 3 items in stock
+    When the system checks the stock level
+    Then it should display a low stock alert
 

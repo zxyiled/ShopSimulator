@@ -182,21 +182,21 @@ class ValidatorTest {
     class ValidateQuantity {
 
         @Test
-        @DisplayName("Negative quantity returns true (is negative)")
+        @DisplayName("Negative quantity returns false (is invalid)")
         void negativeQuantity() {
-            assertTrue(Validator.validateQuantity(-1));
+            assertFalse(Validator.validateQuantity(-1));
         }
 
         @Test
-        @DisplayName("Zero quantity returns false (is not negative)")
+        @DisplayName("Zero quantity returns true (is valid)")
         void zeroQuantity() {
-            assertFalse(Validator.validateQuantity(0));
+            assertTrue(Validator.validateQuantity(0));
         }
 
         @Test
-        @DisplayName("Positive quantity returns false (is not negative)")
+        @DisplayName("Positive quantity returns true (is valid)")
         void positiveQuantity() {
-            assertFalse(Validator.validateQuantity(10));
+            assertTrue(Validator.validateQuantity(10));
         }
     }
 

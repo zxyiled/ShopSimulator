@@ -1,7 +1,11 @@
-Feature: Decrease stock amount
+Feature: Stock Management System
 
-  Scenario: Successful stock decrease
-    Given a product exists with quantity 10
-    When I decrease stock for quantity 5
-    Then the stock should be 5
+  As a store manager
+  I want to decrease product stock when items are sold
+  So I can maintain accurate inventory records
+
+  Scenario: Stock is successfully decreased after a sale
+    Given a product has 10 items in stock
+    When 5 items are sold from inventory
+    Then the product should have 5 items remaining
 

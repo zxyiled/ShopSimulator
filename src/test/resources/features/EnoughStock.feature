@@ -1,8 +1,11 @@
-Feature: Validate if Stock is Enough
+Feature: Stock Availability Validation
 
-  Scenario: Successful validation when stock is sufficient
+  As a store manager
+  I want to verify that enough stock exists before processing orders
+  So I can prevent overselling and maintain customer satisfaction
 
-    Given a test product exists with quantity 10
-    When I validate stock for quantity 5
-    Then the validation should be successful
+  Scenario: System confirms sufficient stock for order
+    Given a product has 10 items available in inventory
+    When a customer requests 5 items
+    Then the system should confirm the stock is sufficient
 

@@ -13,20 +13,20 @@ public class EnoughStockSteps {
     private int requiredQuantity;
     private boolean validationResult;
 
-    @Given("a test product exists with quantity {int}")
-    public void a_test_product_exists_with_quantity(int quantity) {
+    @Given("a product has {int} items available in inventory")
+    public void a_product_has_items_available_in_inventory(int quantity) {
         product = new Product("TEST001", "Test Product", 10.0, quantity);
     }
 
-    @When("I validate stock for quantity {int}")
-    public void i_validate_stock_for_quantity(int quantity) {
+    @When("a customer requests {int} items")
+    public void a_customer_requests_items(int quantity) {
         this.requiredQuantity = quantity;
         validationResult = Validator.validateEnoughStock(product, quantity);
     }
 
-    @Then("the validation should be successful")
-    public void the_validation_should_be_successful() {
-        assertTrue(validationResult, "The expected validation should be successful. Current stock: " +
-                product.getQuantity() + ", Required: " + requiredQuantity);
+    @Then("the system should confirm the stock is sufficient")
+    public void the_system_should_confirm_the_stock_is_sufficient() {
+        assertTrue(validationResult, "Stock should be sufficient for customer request. " +
+                "Available stock: " + product.getQuantity() + ", Requested: " + requiredQuantity);
     }
 }

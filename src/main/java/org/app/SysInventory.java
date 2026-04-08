@@ -62,7 +62,7 @@ public class SysInventory {
 
     private boolean validateStockOperation(String code, int quantity) {
         if (!validateQuantity(quantity)) {
-            return false;
+            return true;
         }
 
         Optional<Product> product = searchProductByCode(code);
