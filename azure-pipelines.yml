@@ -47,9 +47,9 @@ steps:
       tasks: 'pitest'
 
   # Step 6 (Optional): SonarQube analysis
-  # - task: Gradle@3
-  #   inputs:
-  #     workingDirectory: '$(projectDir)'
-  #     gradleWrapperFile: '$(projectDir)/gradlew'
-  #     gradleOptions: '-Dfile.encoding=UTF-8'
-  #     tasks: 'sonar'
+  - task: Gradle@3
+    inputs:
+      workingDirectory: '$(projectDir)'
+      gradleWrapperFile: '$(projectDir)/gradlew'
+      gradleOptions: '-Dfile.encoding=UTF-8'
+      tasks: 'sonar'

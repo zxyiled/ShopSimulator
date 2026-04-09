@@ -6,6 +6,7 @@ import io.cucumber.java.en.Then;
 import org.logic.Product;
 import org.logic.Validator;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class AlertLowStockSteps {
 
@@ -14,11 +15,17 @@ public class AlertLowStockSteps {
 
     @Given("a product for low stock alert has {int} items in stock")
     public void a_product_for_low_stock_alert_has_items_in_stock(int quantity) {
+
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Cannot initialize product: Stock quantity cannot be negative (" + quantity + ").");
+        }
         product = new Product("TEST001", "Test Product", 10.0, quantity);
     }
 
     @When("the system checks the stock level")
     public void the_system_checks_the_stock_level() {
+
+        assertNotNull(product, "Product must be initialized before checking stock level.");
         validationResult = Validator.isStockLow(product);
     }
 
