@@ -52,7 +52,7 @@ steps:
       workingDirectory: '$(projectDir)'
       gradleWrapperFile: '$(projectDir)/gradlew'
       gradleOptions: '-Dfile.encoding=UTF-8'
-      tasks: 'sonar'
+      tasks: 'sonarqube'
     env:
       SONAR_TOKEN: $(SONAR_TOKEN)
       SONAR_HOST_URL: $(SONAR_HOST_URL)
