@@ -53,6 +53,6 @@ steps:
       gradleWrapperFile: '$(projectDir)/gradlew'
       gradleOptions: '-Dfile.encoding=UTF-8'
       tasks: 'sonar'
-      env:
-        SONAR_TOKEN: $(SONAR_TOKEN)
-        SONAR_HOST_URL: $(SONAR_HOST_URL)
+    env:
+      SONAR_TOKEN: $(SONAR_TOKEN)
+      SONAR_HOST_URL: $(SONAR_HOST_URL)
