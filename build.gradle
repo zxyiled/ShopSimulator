@@ -54,6 +54,10 @@ dependencies {
     // Spring Boot Web (API REST + embedded Tomcat server)
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    // Cucumber reporting and query utilities for test result analysis
+    implementation group: 'io.cucumber', name: 'query', version: '14.7.0'
+    implementation group: 'io.cucumber', name: 'cucumber-parent', version: '4.5.0'
+
     // Testing — JUnit platform BOM manages consistent versions
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
