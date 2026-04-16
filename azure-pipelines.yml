@@ -6,6 +6,7 @@ pool:
 
 variables:
   projectDir: '.'
+  AZURE_ARTIFACTS_ENV_ACCESS_TOKEN: $(System.AccessToken)
 
 steps:
   # Step 1: Checkout the code
@@ -18,17 +19,27 @@ steps:
     displayName: "Check Java version (using local agent's)"
     workingDirectory: $(projectDir)
 
-  # Step 3: Run build and unit tests
+  # Step 3: Run build, unit tests and generate JaCoCo coverage report
   - task: Gradle@3
+    displayName: "Build + unit tests + JaCoCo report"
     inputs:
       workingDirectory: '$(projectDir)'
       gradleWrapperFile: '$(projectDir)/gradlew'
       gradleOptions: '-Dfile.encoding=UTF-8 -Xmx3072m'
       publishJUnitResults: true
       testResultsFiles: '**/build/test-results/test/TEST-*.xml'
-      tasks: 'clean build test'
+      tasks: 'clean build test jacocoTestReport'
 
-  # Step 4: Run acceptance tests (Cucumber)
+  # Step 4: Publish JaCoCo coverage results to Azure DevOps
+  - task: PublishCodeCoverageResults@1
+    displayName: "Publish JaCoCo coverage"
+    inputs:
+      codeCoverageTool: 'JaCoCo'
+      summaryFileLocation: '**/build/reports/jacoco/test/jacocoTestReport.xml'
+      reportDirectory: '**/build/reports/jacoco/test/html'
+      failIfCoverageEmpty: true
+
+  # Step 5: Run acceptance tests (Cucumber)
   - task: Gradle@3
     inputs:
       workingDirectory: '$(projectDir)'
@@ -38,7 +49,7 @@ steps:
       testResultsFiles: '**/build/test-results/acceptanceTest/TEST-*.xml'
       publishJUnitResults: true
 
-  # Step 5: Run mutation tests (Pitest)
+  # Step 6: Run mutation tests (Pitest)
   - task: Gradle@3
     inputs:
       workingDirectory: '$(projectDir)'
@@ -46,7 +57,7 @@ steps:
       gradleOptions: '-Dfile.encoding=UTF-8'
       tasks: 'pitest'
 
-  # Step 6 (Optional): SonarQube analysis
+  # Step 7: SonarQube analysis
   - task: Gradle@3
     inputs:
       workingDirectory: '$(projectDir)'
@@ -56,3 +67,18 @@ steps:
     env:
       SONAR_TOKEN: $(SONAR_TOKEN)
       SONAR_HOST_URL: $(SONAR_HOST_URL)
+
+  # Step 8: Publish Quality Gate result and break the build if it fails
+  - task: SonarQubePublish@5
+    displayName: "Publish Quality Gate Result"
+    inputs:
+      pollingTimeoutSec: '300'
+
+  # Step 9: Publish artifacts
+  - task: Gradle@3
+    displayName: "Publish to Azure Artifacts Feed"
+    inputs:
+      tasks: 'publish'
+      workingDirectory: '$(projectDir)'
+      env:
+        AZURE_ARTIFACTS_ENV_ACCESS_TOKEN: $(System.AccessToken)
