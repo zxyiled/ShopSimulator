@@ -31,7 +31,7 @@ steps:
       tasks: 'clean build test jacocoTestReport'
 
   # Step 4: Publish JaCoCo coverage results to Azure DevOps
-  - task: PublishCodeCoverageResults@1
+  - task: PublishCodeCoverageResults@2
     displayName: "Publish JaCoCo coverage"
     inputs:
       codeCoverageTool: 'JaCoCo'
