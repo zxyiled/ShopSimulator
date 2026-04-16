@@ -114,6 +114,9 @@ sonar {
                 "build/reports/jacoco/test/jacocoTestReport.xml"
         property "sonar.inclusions", "src/main/java/**/*.java"
         property "sonar.exclusions", "**/Main.java, **/config/AppConfig.java"
+
+        property "sonar.qualitygate.wait", "true"
+        property "sonar.qualitygate.timeout", "300"
     }
 }
 

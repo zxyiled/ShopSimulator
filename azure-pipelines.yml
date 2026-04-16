@@ -68,13 +68,7 @@ steps:
       SONAR_TOKEN: $(SONAR_TOKEN)
       SONAR_HOST_URL: $(SONAR_HOST_URL)
 
-  # Step 8: Publish Quality Gate result and break the build if it fails
-  - task: SonarQubePublish@5
-    displayName: "Publish Quality Gate Result"
-    inputs:
-      pollingTimeoutSec: '300'
-
-  # Step 9: Publish artifacts
+  # Step 8: Publish artifacts
   - task: Gradle@3
     displayName: "Publish to Azure Artifacts Feed"
     inputs:
