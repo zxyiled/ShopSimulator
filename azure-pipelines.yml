@@ -27,7 +27,7 @@ steps:
       gradleWrapperFile: '$(projectDir)/gradlew'
       gradleOptions: '-Dfile.encoding=UTF-8 -Xmx3072m'
       publishJUnitResults: true
-      testResultsFiles: '**/build/test-results/test/TEST-*.xml'
+      testResultsFiles: '**/build/test-results/**/*.xml'
       tasks: 'clean build test jacocoTestReport'
 
   # Step 4: Publish JaCoCo coverage results to Azure DevOps
@@ -80,5 +80,5 @@ steps:
     inputs:
       tasks: 'publish'
       workingDirectory: '$(projectDir)'
-      env:
-        AZURE_ARTIFACTS_ENV_ACCESS_TOKEN: $(System.AccessToken)
+    env:
+      AZURE_ARTIFACTS_ENV_ACCESS_TOKEN: $(System.AccessToken)
