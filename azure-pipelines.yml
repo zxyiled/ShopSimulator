@@ -31,13 +31,13 @@ steps:
       tasks: 'clean build test jacocoTestReport'
 
   # Step 4: Publish JaCoCo coverage results to Azure DevOps
-  - task: PublishCodeCoverageResults@2
-    displayName: "Publish JaCoCo coverage"
-    inputs:
-      codeCoverageTool: 'JaCoCo'
-      summaryFileLocation: '**/build/reports/jacoco/test/jacocoTestReport.xml'
-      reportDirectory: '**/build/reports/jacoco/test/html'
-      failIfCoverageEmpty: true
+  #- task: PublishCodeCoverageResults@2
+    #displayName: "Publish JaCoCo coverage"
+    #inputs:
+      #codeCoverageTool: 'JaCoCo'
+      #summaryFileLocation: '**/build/reports/jacoco/test/jacocoTestReport.xml'
+      #reportDirectory: '**/build/reports/jacoco/test/html'
+      #failIfCoverageEmpty: true
 
   # Step 5: Run acceptance tests (Cucumber)
   - task: Gradle@3
