@@ -79,3 +79,5 @@ steps:
       tasks: 'publish'
       workingDirectory: '$(projectDir)'
       gradleWrapperFile: '$(projectDir)/gradlew'
+    env:
+      AZURE_ARTIFACTS_ENV_ACCESS_TOKEN: $(System.AccessToken)
