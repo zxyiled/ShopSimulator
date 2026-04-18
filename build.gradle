@@ -116,7 +116,7 @@ sonar {
         property "sonar.exclusions", "**/Main.java, **/config/AppConfig.java"
 
         property "sonar.qualitygate.wait", "true"
-        property "sonar.qualitygate.timeout", "300"
+        property "sonar.qualitygate.timeout", "800"
     }
 }
 
