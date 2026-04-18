@@ -10,8 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class DecreaseAmountSteps {
 
     private Product product;
-    private int requiredQuantity;
-    private boolean validationResult;
 
     @Given("a product has {int} items in stock")
     public void a_product_has_items_in_stock(int quantity) {
@@ -20,9 +18,6 @@ public class DecreaseAmountSteps {
 
     @When("{int} items are sold from inventory")
     public void items_are_sold_from_inventory(int quantity) {
-        this.requiredQuantity = quantity;
-        validationResult = Validator.validateEnoughStock(product, quantity);
-        
         product.setQuantity(product.getQuantity() - quantity);
     }
 
