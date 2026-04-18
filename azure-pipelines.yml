@@ -69,7 +69,7 @@ steps:
       SONAR_HOST_URL: $(SONAR_HOST_URL)
 
   # Step 8: Publish artifacts
-  - task: GradleAuthenticate@0
+  - task: MavenAuthenticate@0
     displayName: "Authenticate with Azure Artifacts"
     inputs:
       artifactsFeeds: 'ShopSimulator'
