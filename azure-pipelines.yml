@@ -13,6 +13,12 @@ steps:
   - checkout: self
     timeoutInMinutes: 10
     retryCountOnTaskFailure: 3
+    fetchDepth: 0  # Fetch full history for SonarQube new code detection
+
+  # Convert shallow clone to full for proper blame/new code analysis
+  - script: git fetch --unshallow || true
+    displayName: "Fetch full git history"
+    workingDirectory: $(projectDir)
 
   # Step 2: Check Java version installed on the local agent
   - script: java -version
