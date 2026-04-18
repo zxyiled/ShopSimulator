@@ -1,7 +1,6 @@
 package stepdefinitions;
 
 import org.logic.Product;
-import org.logic.Validator;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
