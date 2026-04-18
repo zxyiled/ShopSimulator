@@ -2,7 +2,7 @@ trigger:
   - main
 
 pool:
-  name: LocalPool   # Your local agent registered in Azure DevOps
+  name: LocalPool  # Your local agent registered in Azure DevOps
 
 variables:
   projectDir: '.'
@@ -15,21 +15,21 @@ steps:
 
   # Step 2: Check Java version installed on the local agent
   - script: java -version
-    displayName: "Check Java version (using local agent's)"
+    displayName: "Check Java version"
     workingDirectory: $(projectDir)
 
-  # Step 3: Run build, unit tests and generate JaCoCo coverage report
+  # Step 3: Run unit tests and generate JaCoCo coverage report.
   - task: Gradle@3
-    displayName: "Build + unit tests + JaCoCo report"
+    displayName: "Unit tests + JaCoCo report"
     inputs:
       workingDirectory: '$(projectDir)'
       gradleWrapperFile: '$(projectDir)/gradlew'
       gradleOptions: '-Dfile.encoding=UTF-8 -Xmx3072m'
       publishJUnitResults: true
-      testResultsFiles: '**/build/test-results/**/*.xml'
-      tasks: 'clean build test jacocoTestReport'
+      testResultsFiles: '**/build/test-results/test/TEST-*.xml'
+      tasks: 'clean test jacocoTestReport'
 
-  # Step 4: Publish JaCoCo coverage results to Azure DevOps
+  # Step 4: Publish JaCoCo coverage results to Azure DevOps.
   - task: PublishCodeCoverageResults@2
     displayName: "Publish JaCoCo coverage"
     inputs:
@@ -38,26 +38,29 @@ steps:
       reportDirectory: '**/build/reports/jacoco/test/html'
       failIfCoverageEmpty: true
 
-  # Step 5: Run acceptance tests (Cucumber)
+  # Step 5: Run acceptance tests (Cucumber).
   - task: Gradle@3
+    displayName: "Acceptance tests (Cucumber)"
     inputs:
       workingDirectory: '$(projectDir)'
       gradleWrapperFile: '$(projectDir)/gradlew'
       gradleOptions: '-Dfile.encoding=UTF-8'
       tasks: 'acceptanceTest'
-      testResultsFiles: '**/build/test-results/acceptanceTest/TEST-*.xml'
       publishJUnitResults: true
+      testResultsFiles: '**/build/test-results/acceptanceTest/TEST-*.xml'
 
-  # Step 6: Run mutation tests (Pitest)
+  # Step 6: Run mutation tests (PiTest).
   - task: Gradle@3
+    displayName: "Mutation tests (PiTest)"
     inputs:
       workingDirectory: '$(projectDir)'
       gradleWrapperFile: '$(projectDir)/gradlew'
       gradleOptions: '-Dfile.encoding=UTF-8'
       tasks: 'pitest'
 
-  # Step 7: SonarQube analysis
+  # Step 7: SonarQube analysis.
   - task: Gradle@3
+    displayName: "SonarQube analysis"
     inputs:
       workingDirectory: '$(projectDir)'
       gradleWrapperFile: '$(projectDir)/gradlew'
@@ -67,12 +70,12 @@ steps:
       SONAR_TOKEN: $(SONAR_TOKEN)
       SONAR_HOST_URL: $(SONAR_HOST_URL)
 
-  # Step 8: Publish artifacts
+  # Step 8: Publish artifacts to Azure Artifacts Feed.
   - task: Gradle@3
     displayName: "Publish to Azure Artifacts Feed"
     inputs:
-      tasks: 'publish'
       workingDirectory: '$(projectDir)'
       gradleWrapperFile: '$(projectDir)/gradlew'
+      tasks: 'publish'
     env:
       AZURE_ARTIFACTS_ENV_ACCESS_TOKEN: $(ARTIFACTS_TOKEN)
