@@ -12,7 +12,6 @@ steps:
   - checkout: self
     timeoutInMinutes: 10
     retryCountOnTaskFailure: 3
-    fetchDepth: 0  # Fetch full history for SonarQube new code detection
 
   # Step 2: Check Java version installed on the local agent
   - script: java -version
@@ -69,10 +68,6 @@ steps:
       SONAR_HOST_URL: $(SONAR_HOST_URL)
 
   # Step 8: Publish artifacts
-  - task: MavenAuthenticate@0
-    displayName: "Authenticate with Azure Artifacts"
-    inputs:
-      artifactsFeeds: 'ShopSimulator'
   - task: Gradle@3
     displayName: "Publish to Azure Artifacts Feed"
     inputs:
@@ -80,4 +75,4 @@ steps:
       workingDirectory: '$(projectDir)'
       gradleWrapperFile: '$(projectDir)/gradlew'
     env:
-      AZURE_ARTIFACTS_ENV_ACCESS_TOKEN: $(System.AccessToken)
+      AZURE_ARTIFACTS_ENV_ACCESS_TOKEN: $(ARTIFACTS_TOKEN)
