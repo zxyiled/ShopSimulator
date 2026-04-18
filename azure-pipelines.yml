@@ -6,7 +6,6 @@ pool:
 
 variables:
   projectDir: '.'
-  AZURE_ARTIFACTS_ENV_ACCESS_TOKEN: $(System.AccessToken)
 
 steps:
   # Step 1: Checkout the code
@@ -71,6 +70,7 @@ steps:
 
   # Step 8: Publish artifacts
   - task: GradleAuthenticate@0
+    displayName: "Authenticate with Azure Artifacts"
     inputs:
       artifactsFeeds: 'ShopSimulator'
   - task: Gradle@3
