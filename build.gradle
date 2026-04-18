@@ -90,7 +90,7 @@ pitest {
 }
 
 jacocoTestReport {
-    dependsOn test
+    dependsOn(tasks.test)
     reports {
         xml.required = true
         html.required = true
