@@ -47,3 +47,7 @@ bin/
 
 ### Gradle ###
 gradle.properties
+
+### JMeter ###
+jmeter.log
+results/
