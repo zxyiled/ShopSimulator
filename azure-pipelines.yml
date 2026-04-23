@@ -81,8 +81,8 @@ steps:
       AZURE_ARTIFACTS_ENV_ACCESS_TOKEN: $(ARTIFACTS_TOKEN)
 
   # Step 9: Create results folders for Stress Tests
-  - powershell: |
-      New-Item -ItemType Directory -Force -Path "$(resultsFolder)\html"
+  - script: |
+      mkdir -p "$(resultsFolder)/html"
     displayName: "Create JMeter results folders"
 
   # Step 10: Run JMeter stress tests
