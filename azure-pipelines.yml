@@ -85,7 +85,7 @@ steps:
 
   # Step 10: Run JMeter stress tests
   - script: |
-      jmeter -n -t "src\test\jmeter\stress_test_pipeline.jmx" -l "$(Build.ArtifactStagingDirectory)\jmeter-results\results.jtl" -e -o "$(Build.ArtifactStagingDirectory)\jmeter-results\html"
+      jmeter -n -t "src\test\jmeter\tests\stress_test_pipeline.jmx" -l "$(Build.ArtifactStagingDirectory)\jmeter-results\results.jtl" -e -o "$(Build.ArtifactStagingDirectory)\jmeter-results\html"
     displayName: "Run JMeter stress tests"
 
   # Step 11: Publish HTML report as pipeline artifact
