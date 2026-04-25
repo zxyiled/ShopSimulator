@@ -4,7 +4,8 @@ A modern Spring Boot REST API application for managing shop inventory with compr
 
 ## Overview
 
-Shop Simulator is a backend inventory management system designed for small to medium-sized retail businesses. It provides RESTful API endpoints for managing products, tracking stock levels, and maintaining inventory data in memory.
+Shop Simulator is a backend inventory management system designed for small to medium-sized retail businesses. 
+It provides RESTful API endpoints for managing products, tracking stock levels, and maintaining inventory data in memory.
 
 ## Features
 
@@ -17,10 +18,10 @@ Shop Simulator is a backend inventory management system designed for small to me
 
 ### API Features
 - **REST API**: Full CRUD operations via HTTP endpoints
-- **Real-time Statistics**: Inventory statistics and overview endpoints
-- **Search & Filter**: Find products quickly by code or name via API
-- **Alert Management**: View and clear low stock notifications via API
-- **JSON Responses**: Structured data format for easy integration
+- **Statistics Endpoint**: Inventory metrics (total products, low stock count, total value)
+- **Low Stock Alerts**: Automatic detection and endpoint to query alerts
+- **JSON API**: Structured request/response format
+- **HTTP Status Codes**: 200, 201, 400, 404 based on operation result
 
 ## Architecture
 
@@ -70,15 +71,22 @@ cd ShopSimulator
 ./gradlew bootRun
 ```
 
-4. Access the web interface:
-Open your browser and navigate to `http://localhost:8080`
+4. The API will be available at:
+```
+http://localhost:8080/api
+```
 
 ### Dependencies
 
 - **Spring Boot**: Web framework with embedded Tomcat server
-- **Jackson JSON Processor**: For JSON serialization/deserialization
-- **JUnit 5**: For unit testing
-- **Gradle**: Build automation and dependency management
+- **Jackson**: JSON serialization/deserialization
+- **JUnit 5**: Unit testing framework
+- **Cucumber**: Acceptance testing (BDD)
+- **PITest**: Mutation testing
+- **JaCoCo**: Code coverage reporting
+- **SonarQube**: Code quality analysis
+- **JMeter**: Performance/load testing
+- **Gradle**: Build automation
 
 ## API Endpoints
 
@@ -90,7 +98,7 @@ Open your browser and navigate to `http://localhost:8080`
 - `GET /api/products/{code}/validate` - Validate stock availability
 
 ### Statistics & Alerts
-- `GET /api/stats` - Get inventory statistics
+- `GET /api/stats` - Get inventory statistics (total products, low stock count, total value, total alerts)
 - `GET /api/alerts` - Get low stock alerts
 - `DELETE /api/alerts` - Clear all alerts
 
@@ -125,24 +133,10 @@ PATCH /api/products/PROD001/stock
 }
 ```
 
-## Web Interface
+## Data Storage
 
-### Navigation
-- **Products**: View all products with search and filtering
-- **Register**: Add new products to inventory
-- **Stock**: Manage stock levels (increase/decrease)
-- **Alerts**: View and manage low stock notifications
-
-### Features
-- **Real-time Statistics**: Dashboard showing total products, low stock items, and total value
-- **Search Functionality**: Filter products by code or name
-- **Stock Management**: Easy-to-use interface for stock operations
-- **Alert System**: Visual indicators for low stock items
-- **Responsive Design**: Optimized for both desktop and mobile use
-
-### Data Storage
-
-Data is stored in application memory during runtime. When the application restarts, all data is reset and the inventory starts empty.
+**In-Memory Only**: Data is stored exclusively in memory during execution. 
+When the application restarts, all data is lost and the inventory starts empty.
 
 ## Validation Rules
 
@@ -162,24 +156,52 @@ Data is stored in application memory during runtime. When the application restar
 
 The application provides comprehensive error handling:
 - Input validation with descriptive error messages
-- Graceful handling of missing data files
-- Recovery from corrupted JSON files
+- HTTP 400/404 responses for invalid operations
 - Detailed logging for debugging
+- Validation of business rules (insufficient stock, duplicate product, etc.)
 
 ## Development
 
 ### Running Tests
+
+**Unit Tests:**
 ```bash
 ./gradlew test
 ```
 
+**Acceptance Tests (Cucumber BDD):**
+```bash
+./gradlew acceptanceTest
+```
+
+**Mutation Testing (PITest):**
+```bash
+./gradlew pitest
+```
+
+**Code Coverage (JaCoCo):**
+```bash
+./gradlew jacocoTestReport
+```
+Reports generated in `build/reports/jacoco/test/html/`
+
+**Performance Testing (JMeter):**
+Load test plans located in `src/test/jmeter/tests/`
+- `stress_test_pipeline.jmx` - Stress test configuration
+
+Run with JMeter GUI or CLI:
+```bash
+jmeter -n -t tests/stress_test_pipeline.jmx -l tests/results/results.jtl -e -o tests/results/html
+```
+
 ### Code Quality
-The project includes SonarQube integration for code quality analysis:
+
+**SonarQube analysis:**
 ```bash
 ./gradlew sonar
 ```
 
-Note: SonarQube requires compiled classes. The build.gradle file is configured with the necessary `sonar.java.binaries` properties.
+Requires SonarQube server running (configured in `build.gradle`).
 
 ### Project Structure
 ```
@@ -187,34 +209,39 @@ ShopSimulator/
 └── src/
 │   ├── main/
 │   │   ├── java/
-│   │   │   ├── org/
-│   │   │   │   ├── Main.java
-│   │   │   │   ├── controller/
-│   │   │   │   │   └── InventoryController.java
-│   │   │   │   ├── dto/
-│   │   │   │   │   └── Dto.java
-│   │   │   │   ├── app/
-│   │   │   │   │   └── SysInventory.java
-│   │   │   │   ├── logic/
-│   │   │   │   │   ├── Product.java
-│   │   │   │   │   └── Validator.java
-│   │   │   │   └── config/
-│   │   │   │       └── AppConfig.java
+│   │   │   └── org/
+│   │   │       ├── Main.java
+│   │   │       ├── controller/
+│   │   │       │   └── InventoryController.java
+│   │   │       ├── dto/
+│   │   │       │   └── Dto.java
+│   │   │       ├── app/
+│   │   │       │   └── SysInventory.java
+│   │   │       ├── logic/
+│   │   │       │   ├── Product.java
+│   │   │       │   └── Validator.java
+│   │   │       └── config/
+│   │   │           └── AppConfig.java
 │   └── test/
-│       └── java/
-│           └── org/
-│               ├── app/
-│               │   └── SysInventoryTest.java
-│               ├── controller/
-│               │   └── InventoryControllerTest.java
-│               ├── integration/
-│               └── logic/
-│                   ├── ProductTest.java
-│                   └── ValidatorTest.java
+│       ├── java/
+│       │   ├── org/
+│       │   │   ├── app/
+│       │   │   │   └── SysInventoryTest.java
+│       │   │   ├── controller/
+│       │   │   │   └── InventoryControllerTest.java
+│       │   │   └── logic/
+│       │   │       ├── ProductTest.java
+│       │   │       └── ValidatorTest.java
+│       │   └── stepdefinitions/     (Cucumber step definitions)
+│       ├── resources/
+│       │   └── features/            (Cucumber .feature files)
+│       └── jmeter/
+│           └── tests/               (JMeter performance test plans)
+│               └── stres_test_pipeline.jmx
 ├── .gitignore
-├── build.gradle
+├── azure-pipelines.yml
+├── build.gradle 
 ├── gradlew
-├── settings.gradle
 ├── gradlew.bat
 ├── README.md
 └── settings.gradle
@@ -241,7 +268,6 @@ Default port is 8080. Override with:
 3. Include comprehensive error handling
 4. Write unit tests for new functionality
 5. Update documentation for API changes
-6. Test web interface functionality
 
 ## License
 
@@ -249,22 +275,15 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **v2.0-SNAPSHOT**: Web application rewrite
-  - Spring Boot REST API implementation
-  - Modern responsive web UI with JavaScript modules
-  - Real-time dashboard with statistics
-  - In-memory data storage
-  - Enhanced testing with comprehensive coverage
-  - SonarQube integration with proper configuration
-  - Fixed quantity validation to allow zero quantities
-  - Updated project structure with organized static resources
-
-- **v1.0**: Console application
-  - Product registration and management
-  - Stock control operations
-  - JSON persistence
-  - Low stock alerts
-  - Comprehensive validation
+- **v1.0-SNAPSHOT**: Spring Boot REST API
+  - Complete REST API endpoints for products, stock, and alerts
+  - In-memory storage 
+  - Unit tests with JUnit 5
+  - Acceptance tests with Cucumber (BDD)
+  - Mutation testing with PITest
+  - Code coverage with JaCoCo
+  - SonarQube integration
+  - Quantity validation and business rules
 
 ## Code Quality & Analysis
 
