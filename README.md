@@ -239,6 +239,7 @@ ShopSimulator/
 │       └── jmeter/
 │           └── tests/               (JMeter performance test plans)
 │               └── stress_test_pipeline.jmx
+├── .gitattributes
 ├── .gitignore
 ├── azure-pipelines.yml
 ├── build.gradle 
