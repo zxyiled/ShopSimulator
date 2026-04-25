@@ -193,7 +193,7 @@ Run with JMeter GUI or CLI:
 ```bash
 jmeter -n -t tests/stress_test_pipeline.jmx -l tests/results/results.jtl -e -o tests/results/html
 ```
-Reports generated in `ShopSimulator/results/html`
+Reports generated in `ShopSimulator/results/html/`
 
 ### Code Quality
 
