@@ -1,0 +1,7 @@
+# Tell GitHub to not count these files as the primary language
+*.html linguist-detectable=false
+*.css  linguist-detectable=false
+*.js   linguist-detectable=false
+
+# Explicitly mark Java as the main language
+*.java linguist-detectable=true
