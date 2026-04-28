@@ -36,7 +36,7 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report - Warm-up">
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report - Warm-up" enabled="true">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
             <name>saveConfig</name>
@@ -83,7 +83,7 @@
         </collectionProp>
       </HeaderManager>
       <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Baseline">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Baseline" enabled="true">
         <stringProp name="TestPlan.comments">Simulate normal system traffic under real-world conditions.
 The response times here serve as your benchmark for the following groups.</stringProp>
         <intProp name="ThreadGroup.num_threads">50</intProp>
@@ -98,7 +98,7 @@ The response times here serve as your benchmark for the following groups.</strin
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Stats - Baseline" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Stats - Baseline">
           <stringProp name="HTTPSampler.path">/api/stats</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -109,7 +109,7 @@ The response times here serve as your benchmark for the following groups.</strin
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Products - Baseline" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Products - Baseline">
           <stringProp name="HTTPSampler.path">/api/products</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -120,7 +120,7 @@ The response times here serve as your benchmark for the following groups.</strin
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report - Baseline" enabled="true">
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report - Baseline">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
             <name>saveConfig</name>
@@ -212,7 +212,7 @@ The response times here serve as your benchmark for the following groups.</strin
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report - Stress" enabled="true">
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report - Stress">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
             <name>saveConfig</name>
@@ -314,7 +314,7 @@ logging in at the same time. Check whether the system crashes or remains stable.
         </ResultCollector>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Recovery">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Recovery" enabled="true">
         <stringProp name="TestPlan.comments">Verify that the system returns to normal response times after the peak.
 If response times do not improve, there is a recovery issue.</stringProp>
         <intProp name="ThreadGroup.num_threads">50</intProp>
@@ -329,7 +329,7 @@ If response times do not improve, there is a recovery issue.</stringProp>
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Products - Recovery" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Products - Recovery">
           <stringProp name="HTTPSampler.path">/api/products</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -382,13 +382,47 @@ If response times do not improve, there is a recovery issue.</stringProp>
         <stringProp name="HTTPSampler.domain">localhost</stringProp>
         <stringProp name="HTTPSampler.port">8080</stringProp>
         <stringProp name="HTTPSampler.protocol">http</stringProp>
-        <stringProp name="HTTPSampler.path">/api/products</stringProp>
         <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
           <collectionProp name="Arguments.arguments"/>
         </elementProp>
         <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
       </ConfigTestElement>
       <hashTree/>
+      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="Setup - Register test product">
+        <intProp name="ThreadGroup.num_threads">1</intProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </SetupThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST Products - Setup">
+          <stringProp name="HTTPSampler.path">/api/products</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;code&quot;: &quot;STRESS01&quot;,&#xd;
+    &quot;name&quot;: &quot;STRESS&quot;,&#xd;
+    &quot;price&quot;: &quot;10.0&quot;,&#xd;
+    &quot;quantity&quot;: 10&#xd;
+}&#xd;
+</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+      </hashTree>
     </hashTree>
   </hashTree>
 </jmeterTestPlan>
