@@ -74,7 +74,7 @@ steps:
 
   # Step 8: Create results folders for Stress Tests
   - script: |
-      mkdir "$(htmlReport)"
+      mkdir -p "$(htmlReport)"
     displayName: "Create JMeter results folders"
 
   # Step 9: Run JMeter stress tests
