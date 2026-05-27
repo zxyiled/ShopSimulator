@@ -55,8 +55,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
     // Cucumber reporting and query utilities for test result analysis
-    implementation group: 'io.cucumber', name: 'query', version: '14.7.0'
-    implementation group: 'io.cucumber', name: 'cucumber-parent', version: '4.5.0'
+    implementation "io.cucumber:query:14.7.0"
+    implementation "io.cucumber:cucumber-parent:4.5.0"
 
     // Testing — JUnit platform BOM manages consistent versions
     testImplementation platform('org.junit:junit-bom:5.10.0')
@@ -116,7 +116,6 @@ sonar {
         property "sonar.exclusions", "**/Main.java, **/config/AppConfig.java"
 
         property "sonar.qualitygate.wait", "true"
-        property "sonar.qualitygate.timeout", "300"
     }
 }
 
