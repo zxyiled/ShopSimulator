@@ -6,10 +6,10 @@ pool:
 
 variables:
   projectDir: '.'
-  jmxFile: 'src\test\jmeter\tests\stress_test_pipeline.jmx'
-  resultsFolder: '$(Build.ArtifactStagingDirectory)\jmeter-results'
-  resultsFile: '$(Build.ArtifactStagingDirectory)\jmeter-results\results.jtl'
-  htmlReport: '$(Build.ArtifactStagingDirectory)\jmeter-results\html'
+  jmxFile: 'src/test/jmeter/tests/stress_test_pipeline.jmx'
+  resultsFolder: '$(Build.ArtifactStagingDirectory)/jmeter-results'
+  resultsFile: '$(Build.ArtifactStagingDirectory)/jmeter-results/results.jtl'
+  htmlReport: '$(Build.ArtifactStagingDirectory)/jmeter-results/html'
 
 steps:
   # Step 1: Checkout the code
