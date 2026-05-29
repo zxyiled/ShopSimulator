@@ -1,5 +1,9 @@
 trigger:
-  - main
+  branches:
+    include:
+      - feature/login
+    exclude:
+      - main
 
 pool:
   name: LocalPool  # Your local agent registered in Azure DevOps
