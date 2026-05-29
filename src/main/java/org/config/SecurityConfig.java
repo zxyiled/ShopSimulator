@@ -44,11 +44,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
                 .csrf(csrf -> csrf
-                        // HttpOnly=false is required: the SPA must read the XSRF-TOKEN cookie via
-                        // JavaScript to echo it in the X-XSRF-TOKEN header (double-submit pattern).
-                        // The CSRF token is not a session secret, and the session cookie (JSESSIONID)
-                        // stays HttpOnly, so this does not expose credentials to XSS.
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())  // NOSONAR: the SPA must read XSRF-TOKEN via JS (double-submit pattern). JSESSIONID stays HttpOnly.
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
                 )
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
