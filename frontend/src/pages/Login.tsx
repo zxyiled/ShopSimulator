@@ -26,7 +26,7 @@ export default function Login() {
       <div className="login-card">
         <h1>ShopSimulator - Login</h1>
         {error && (
-          <div className="error" id="error-message">
+          <div className="error" id="error-message" data-testid="login-error">
             Invalid credentials
           </div>
         )}
@@ -41,6 +41,7 @@ export default function Login() {
             <input
               id="username"
               name="username"
+              data-testid="username-input"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
@@ -52,12 +53,13 @@ export default function Login() {
               id="password"
               name="password"
               type="password"
+              data-testid="password-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
             />
           </div>
-          <button id="login-btn" type="submit">
+          <button id="login-btn" type="submit" data-testid="login-btn">
             Log in
           </button>
         </form>

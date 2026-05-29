@@ -76,12 +76,12 @@ export default function Dashboard() {
     <div className="dashboard">
       <div className="dashboard-header">
         <div>
-          <h1>Inventory Dashboard</h1>
+          <h1 data-testid="dashboard-title">Inventory Dashboard</h1>
           <p>
             Welcome, <span id="current-user">{username}</span>
           </p>
         </div>
-        <button id="logout-btn" type="button" onClick={onLogout}>
+        <button id="logout-btn" type="button" data-testid="logout-btn" onClick={onLogout}>
           Logout
         </button>
       </div>
@@ -101,6 +101,7 @@ export default function Dashboard() {
             <input
               id="product-code"
               name="code"
+              data-testid="code-input"
               value={form.code}
               onChange={(e) => setForm({ ...form, code: e.target.value })}
               required
@@ -111,6 +112,7 @@ export default function Dashboard() {
             <input
               id="product-name"
               name="name"
+              data-testid="name-input"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
@@ -123,6 +125,7 @@ export default function Dashboard() {
               name="price"
               type="number"
               step="0.01"
+              data-testid="price-input"
               value={form.price}
               onChange={(e) => setForm({ ...form, price: e.target.value })}
               required
@@ -134,23 +137,24 @@ export default function Dashboard() {
               id="product-stock"
               name="quantity"
               type="number"
+              data-testid="quantity-input"
               value={form.quantity}
               onChange={(e) => setForm({ ...form, quantity: e.target.value })}
               required
             />
           </div>
-          <button id="add-product-btn" type="submit">
+          <button id="add-product-btn" type="submit" data-testid="register-btn">
             Add
           </button>
         </form>
         {message && (
-          <div id="message" className={`message ${message.ok ? 'ok' : 'fail'}`}>
+          <div id="message" data-testid="message" className={`message ${message.ok ? 'ok' : 'fail'}`}>
             {message.text}
           </div>
         )}
       </div>
 
-      <table id="inventory-table">
+      <table id="inventory-table" data-testid="product-table">
         <thead>
           <tr>
             <th>Code</th>
