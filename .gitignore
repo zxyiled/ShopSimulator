@@ -51,3 +51,14 @@ gradle.properties
 ### JMeter ###
 jmeter.log
 results/
+
+### Frontend (React + Vite) ###
+frontend/node_modules/
+frontend/dist/
+
+### Misc ###
+docs
+prompts
+
+### Build outputs ###
+target/
