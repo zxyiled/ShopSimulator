@@ -1,9 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getCurrentUser, getProducts, logout, registerProduct, Unauthorized } from '../api'
+import { getCurrentUser, getProducts, logout, registerProduct, updateStock, Unauthorized } from '../api'
 import type { Product } from '../types'
 
 const emptyForm = { code: '', name: '', price: '', quantity: '' }
+const LOW_STOCK_THRESHOLD = 5
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -11,6 +12,8 @@ export default function Dashboard() {
   const [products, setProducts] = useState<Product[]>([])
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null)
   const [form, setForm] = useState(emptyForm)
+
+  const lowStock = products.filter((p) => p.quantity <= LOW_STOCK_THRESHOLD)
 
   async function loadProducts() {
     setProducts(await getProducts())
@@ -47,6 +50,17 @@ export default function Dashboard() {
     }
   }
 
+  async function onUpdateStock(code: string, operation: 'augment' | 'reduce') {
+    setMessage(null)
+    try {
+      const res = await updateStock(code, operation, 1)
+      setMessage({ text: res.message, ok: res.success })
+      if (res.success) await loadProducts()
+    } catch (err) {
+      if (err instanceof Unauthorized) navigate('/login', { replace: true })
+    }
+  }
+
   async function onLogout() {
     await logout()
     navigate('/login?logout', { replace: true })
@@ -65,6 +79,13 @@ export default function Dashboard() {
           Logout
         </button>
       </div>
+
+      {lowStock.length > 0 && (
+        <div id="low-stock-alert" className="alert" role="alert" data-testid="low-stock-alert">
+          <strong>⚠ Low stock alert:</strong>{' '}
+          {lowStock.map((p) => `${p.code} (${p.quantity})`).join(', ')}
+        </div>
+      )}
 
       <div className="panel">
         <h2>Add product</h2>
@@ -135,12 +156,35 @@ export default function Dashboard() {
         </thead>
         <tbody>
           {products.map((p) => (
-            <tr key={p.code} data-testid={`product-row-${p.code}`}>
+            <tr
+              key={p.code}
+              data-testid={`product-row-${p.code}`}
+              className={p.quantity <= LOW_STOCK_THRESHOLD ? 'low-stock' : undefined}
+            >
               <td>{p.code}</td>
               <td>{p.name}</td>
               <td>{p.price.toFixed(2)}</td>
               <td>{p.quantity}</td>
-              <td></td>
+              <td className="actions">
+                <button
+                  type="button"
+                  className="stock-btn"
+                  data-testid={`reduce-${p.code}`}
+                  aria-label={`Reduce stock of ${p.code}`}
+                  onClick={() => onUpdateStock(p.code, 'reduce')}
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  className="stock-btn"
+                  data-testid={`augment-${p.code}`}
+                  aria-label={`Increase stock of ${p.code}`}
+                  onClick={() => onUpdateStock(p.code, 'augment')}
+                >
+                  +
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

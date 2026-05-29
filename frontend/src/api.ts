@@ -64,3 +64,17 @@ export async function registerProduct(input: ProductInput): Promise<ApiResponse<
   if (res.status === 401) throw new Unauthorized()
   return (await res.json()) as ApiResponse<null>
 }
+
+export async function updateStock(
+  code: string,
+  operation: 'augment' | 'reduce',
+  quantity: number,
+): Promise<ApiResponse<Product | null>> {
+  const res = await fetch(`/api/products/${encodeURIComponent(code)}/stock`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...csrfHeader() },
+    body: JSON.stringify({ operation, quantity }),
+  })
+  if (res.status === 401) throw new Unauthorized()
+  return (await res.json()) as ApiResponse<Product | null>
+}
