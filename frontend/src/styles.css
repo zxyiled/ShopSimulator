@@ -156,6 +156,13 @@ tr.low-stock td {
 td.actions {
   display: flex;
   gap: 0.4rem;
+  align-items: center;
+}
+
+.stock-amount {
+  width: 4rem;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.85rem;
 }
 
 .stock-btn {

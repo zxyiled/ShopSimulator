@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [products, setProducts] = useState<Product[]>([])
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null)
   const [form, setForm] = useState(emptyForm)
+  const [amounts, setAmounts] = useState<Record<string, string>>({})
 
   const lowStock = products.filter((p) => p.quantity <= LOW_STOCK_THRESHOLD)
 
@@ -52,8 +53,13 @@ export default function Dashboard() {
 
   async function onUpdateStock(code: string, operation: 'augment' | 'reduce') {
     setMessage(null)
+    const quantity = Number(amounts[code] ?? '1')
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      setMessage({ text: 'Enter a quantity of at least 1', ok: false })
+      return
+    }
     try {
-      const res = await updateStock(code, operation, 1)
+      const res = await updateStock(code, operation, quantity)
       setMessage({ text: res.message, ok: res.success })
       if (res.success) await loadProducts()
     } catch (err) {
@@ -166,6 +172,15 @@ export default function Dashboard() {
               <td>{p.price.toFixed(2)}</td>
               <td>{p.quantity}</td>
               <td className="actions">
+                <input
+                  type="number"
+                  min="1"
+                  className="stock-amount"
+                  data-testid={`amount-${p.code}`}
+                  aria-label={`Quantity for ${p.code}`}
+                  value={amounts[p.code] ?? '1'}
+                  onChange={(e) => setAmounts({ ...amounts, [p.code]: e.target.value })}
+                />
                 <button
                   type="button"
                   className="stock-btn"
