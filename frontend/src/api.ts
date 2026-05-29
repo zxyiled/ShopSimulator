@@ -2,17 +2,36 @@ import type { ApiResponse, Product } from './types'
 
 export class Unauthorized extends Error {}
 
+function readCookie(name: string): string | undefined {
+  const match = document.cookie
+    .split('; ')
+    .find((c) => c.startsWith(name + '='))
+  return match ? decodeURIComponent(match.split('=')[1]) : undefined
+}
+
+function csrfHeader(): Record<string, string> {
+  const token = readCookie('XSRF-TOKEN')
+  return token ? { 'X-XSRF-TOKEN': token } : {}
+}
+
+async function ensureCsrfToken(): Promise<void> {
+  if (!readCookie('XSRF-TOKEN')) {
+    await fetch('/api/me')
+  }
+}
+
 export async function login(username: string, password: string): Promise<boolean> {
+  await ensureCsrfToken()
   const res = await fetch('/api/login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...csrfHeader() },
     body: new URLSearchParams({ username, password }),
   })
   return res.ok
 }
 
 export async function logout(): Promise<void> {
-  await fetch('/api/logout', { method: 'POST' })
+  await fetch('/api/logout', { method: 'POST', headers: { ...csrfHeader() } })
 }
 
 export async function getCurrentUser(): Promise<string> {
@@ -39,7 +58,7 @@ export interface ProductInput {
 export async function registerProduct(input: ProductInput): Promise<ApiResponse<null>> {
   const res = await fetch('/api/products', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...csrfHeader() },
     body: JSON.stringify(input),
   })
   if (res.status === 401) throw new Unauthorized()

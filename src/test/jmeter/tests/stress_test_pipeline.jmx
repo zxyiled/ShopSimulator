@@ -25,6 +25,14 @@
             <stringProp name="Header.name">Content-Type</stringProp>
             <stringProp name="Header.value">application/json</stringProp>
           </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Cookie</stringProp>
+            <stringProp name="Header.value">XSRF-TOKEN=jmeter-csrf-token</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">X-XSRF-TOKEN</stringProp>
+            <stringProp name="Header.value">jmeter-csrf-token</stringProp>
+          </elementProp>
         </collectionProp>
       </HeaderManager>
       <hashTree/>
