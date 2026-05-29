@@ -51,7 +51,9 @@ The application follows a clean, layered architecture:
 
 ### Prerequisites
 - Java 17 or higher
-- Gradle 7.0 or higher
+- The Gradle Wrapper provides Gradle 9.0 (no local Gradle install required)
+- Node.js and pnpm are downloaded automatically by the build (node-gradle plugin) to compile the React frontend
+- Docker (optional, for containerized run/deploy)
 
 ### Build Instructions
 
@@ -79,14 +81,18 @@ http://localhost:8080/api
 ### Dependencies
 
 - **Spring Boot**: Web framework with embedded Tomcat server
+- **Spring Security**: Form login + HTTP Basic authentication
+- **React + Vite + TypeScript**: Single-page frontend (built with pnpm)
 - **Jackson**: JSON serialization/deserialization
 - **JUnit 5**: Unit testing framework
 - **Cucumber**: Acceptance testing (BDD)
+- **Playwright (Firefox)**: End-to-end testing
 - **PITest**: Mutation testing
 - **JaCoCo**: Code coverage reporting
 - **SonarQube**: Code quality analysis
 - **JMeter**: Performance/load testing
 - **Gradle**: Build automation
+- **Docker**: Containerization (multi-stage build)
 
 ## API Endpoints
 
@@ -133,6 +139,39 @@ PATCH /api/products/PROD001/stock
 }
 ```
 
+## Frontend
+
+The web UI is a **React + Vite + TypeScript** single-page application located in
+`frontend/`. It is built with **pnpm** and bundled into the Spring Boot jar as
+static resources (orchestrated by the `node-gradle` plugin during the Gradle
+build), so the same jar/container serves both the API and the UI.
+
+- `/login` — login page
+- `/dashboard` — inventory dashboard (list + register products, logout)
+
+**Frontend development server** (hot reload, proxies `/api` to `:8080`):
+```bash
+cd frontend
+pnpm install
+pnpm dev        # http://localhost:5173
+```
+
+## Authentication
+
+The application is protected with **Spring Security**:
+- Login page at `/login`; the SPA authenticates against `POST /api/login`
+  (form login). HTTP Basic is also accepted (used by JMeter).
+- All `/api/**` endpoints (except `/api/login`) require authentication and
+  return `401` otherwise.
+- Default credentials: `admin` / `admin123`.
+- Credentials are overridable via environment variables
+  `APP_ADMIN_USERNAME` / `APP_ADMIN_PASSWORD` (used in cloud deployment).
+
+### Auth endpoints
+- `POST /api/login` — form login (`200` on success, `401` on failure)
+- `POST /api/logout` — ends the session (`200`)
+- `GET /api/me` — returns the current authenticated username
+
 ## Data Storage
 
 **In-Memory Only**: Data is stored exclusively in memory during execution. 
@@ -174,6 +213,17 @@ The application provides comprehensive error handling:
 ./gradlew acceptanceTest
 ```
 
+**E2E Tests (Playwright + Firefox):**
+```bash
+# Terminal 1: start the app
+./gradlew bootRun
+
+# Terminal 2: run the E2E suite (Firefox auto-downloads on first run)
+./gradlew e2eTest
+```
+E2E scenarios are tagged `@e2e` and are intentionally excluded from `test` and
+`acceptanceTest` so CI does not require a live app or a browser.
+
 **Mutation Testing (PITest):**
 ```bash
 ./gradlew pitest
@@ -204,16 +254,55 @@ Reports generated in `ShopSimulator/results/html/`
 
 Requires SonarQube server running (configured in `build.gradle`).
 
+## Docker
+
+The project ships a multi-stage `Dockerfile`: the builder stage compiles the
+React frontend (pnpm) and the Spring Boot fat jar (`bootJar`); the runtime stage
+is a slim JRE image (~300 MB) running as a non-root user.
+
+```bash
+# Build image
+docker build -t shopsimulator:latest .
+
+# Run container
+docker run -d -p 8080:8080 --name shopsimulator shopsimulator:latest
+
+# App available at http://localhost:8080/login
+```
+
+The container honors a `PORT` environment variable (defaults to `8080`) and
+shuts down gracefully on `SIGTERM`. Admin credentials can be injected via
+`APP_ADMIN_USERNAME` / `APP_ADMIN_PASSWORD`.
+
+## Cloud Deployment
+
+The application is deployed on **Render** as a Docker web service, configured
+via `render.yaml` (Blueprint):
+- Auto-deployed from the `main` branch.
+- Render injects `PORT`; the container binds to it automatically.
+- `APP_ADMIN_PASSWORD` is set in the Render dashboard (`sync: false`, never
+  committed).
+- Health check path: `/login`.
+
+```bash
+# Verify the deployed service
+curl -L https://<your-domain>.onrender.com/login
+```
+
+The Azure DevOps pipeline (`azure-pipelines.yml`) remains the quality/CI
+pipeline and is independent of cloud hosting.
+
 ### Project Structure
 ```
 ShopSimulator/
-└── src/
+├── src/
 │   ├── main/
 │   │   ├── java/
 │   │   │   └── org/
 │   │   │       ├── Main.java
 │   │   │       ├── controller/
-│   │   │       │   └── InventoryController.java
+│   │   │       │   ├── InventoryController.java
+│   │   │       │   └── AuthController.java       (SPA routing + /api/me)
 │   │   │       ├── dto/
 │   │   │       │   └── Dto.java
 │   │   │       ├── app/
@@ -222,7 +311,8 @@ ShopSimulator/
 │   │   │       │   ├── Product.java
 │   │   │       │   └── Validator.java
 │   │   │       └── config/
-│   │   │           └── AppConfig.java
+│   │   │           ├── AppConfig.java
+│   │   │           └── SecurityConfig.java       (Spring Security)
 │   └── test/
 │       ├── java/
 │       │   ├── org/
@@ -233,16 +323,28 @@ ShopSimulator/
 │       │   │   └── logic/
 │       │   │       ├── ProductTest.java
 │       │   │       └── ValidatorTest.java
-│       │   └── stepdefinitions/     (Cucumber step definitions)
+│       │   ├── stepdefinitions/      (Cucumber step definitions)
+│       │   ├── runners/              (CucumberTestRunner — acceptance)
+│       │   └── e2e/                  (Playwright E2E: runner, pages, steps)
 │       ├── resources/
-│       │   └── features/            (Cucumber .feature files)
+│       │   └── features/             (Cucumber .feature files; e2e/ tagged @e2e)
 │       └── jmeter/
-│           └── tests/               (JMeter performance test plans)
+│           └── tests/                (JMeter performance test plans)
 │               └── stress_test_pipeline.jmx
+├── frontend/                         (React + Vite + TypeScript SPA, built with pnpm)
+│   ├── src/
+│   ├── index.html
+│   ├── package.json
+│   ├── pnpm-lock.yaml
+│   ├── tsconfig.json
+│   └── vite.config.ts
+├── Dockerfile                        (multi-stage build)
+├── .dockerignore
+├── render.yaml                       (Render deployment blueprint)
 ├── .gitattributes
 ├── .gitignore
 ├── azure-pipelines.yml
-├── build.gradle 
+├── build.gradle
 ├── gradlew
 ├── gradlew.bat
 ├── README.md
@@ -286,6 +388,16 @@ This project is licensed under the MIT License - see the LICENSE file for detail
   - Code coverage with JaCoCo
   - SonarQube integration
   - Quantity validation and business rules
+  - Authentication with Spring Security (form login + HTTP Basic)
+  - React + Vite + TypeScript frontend bundled into the jar
+  - End-to-end tests with Playwright (Firefox)
+  - Multi-stage Docker image
+  - Cloud deployment on Render (`render.yaml`)
+
+## Documentation
+
+- [Critical Path](docs/critical-path.md) — essential functionality, dependencies and risk matrix
+- [Test Plan](docs/test-plan.md) — testing strategy, suites and test cases
 
 ## Code Quality & Analysis
 

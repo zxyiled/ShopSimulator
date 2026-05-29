@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: shopsimulator
+    runtime: docker
+    repo: https://github.com/zxyiled/ShopSimulator
+    branch: main
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /login
+    envVars:
+      # Render injects PORT automatically; the Dockerfile ENTRYPOINT binds to it
+      # via --server.port=${PORT:-8080}, so no port var is declared here.
+      - key: APP_ADMIN_USERNAME
+        value: admin
+      - key: APP_ADMIN_PASSWORD
+        sync: false
