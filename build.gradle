@@ -6,6 +6,7 @@ plugins {
     id 'maven-publish'
     id 'org.springframework.boot' version '4.0.3'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.github.node-gradle.node' version '7.1.0'
 }
 
 group = 'org'
@@ -54,6 +55,9 @@ dependencies {
     // Spring Boot Web (API REST + embedded Tomcat server)
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    // Spring Security (form login + HTTP Basic for the REST API)
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
     // Cucumber reporting and query utilities for test result analysis
     implementation "io.cucumber:query:14.7.0"
     implementation "io.cucumber:cucumber-parent:4.5.0"
@@ -73,10 +77,16 @@ dependencies {
 
     // PiTest mutation testing
     testImplementation 'org.pitest:pitest-junit5-plugin:1.2.1'
+
+    // Playwright — E2E tests (Firefox)
+    testImplementation 'com.microsoft.playwright:playwright:1.49.0'
 }
 
 test {
     useJUnitPlatform()
+    filter {
+        excludeTestsMatching "e2e.*"
+    }
 }
 
 pitest {
@@ -113,7 +123,7 @@ sonar {
         property "sonar.coverage.jacoco.xmlReportPaths",
                 "build/reports/jacoco/test/jacocoTestReport.xml"
         property "sonar.inclusions", "src/main/java/**/*.java"
-        property "sonar.exclusions", "**/Main.java, **/config/AppConfig.java"
+        property "sonar.exclusions", "**/Main.java, **/config/AppConfig.java, **/config/SecurityConfig.java"
 
         property "sonar.qualitygate.wait", "true"
     }
@@ -123,5 +133,51 @@ tasks.register("acceptanceTest", Test) {
     useJUnitPlatform()
     description = "Runs Cucumber acceptance tests."
     group = "verification"
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    filter {
+        includeTestsMatching "runners.*"
+    }
+}
+
+tasks.register("e2eTest", Test) {
+    useJUnitPlatform()
+    description = "Runs E2E tests with Playwright (Firefox). Requires the app running on :8080."
+    group = "verification"
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    filter {
+        includeTestsMatching "e2e.*"
+    }
+    systemProperty 'e2e.headless', System.getProperty('e2e.headless', 'true')
+    systemProperty 'e2e.baseUrl', System.getProperty('e2e.baseUrl', 'http://localhost:8080')
+    outputs.upToDateWhen { false }
+}
+
+// ── Frontend (React + Vite, built with pnpm) ───────────────────────────────
+node {
+    version = '22.14.0'
+    pnpmVersion = '10.33.4'
+    download = true
+    nodeProjectDir = file("${projectDir}/frontend")
+}
+
+tasks.register('pnpmBuild', com.github.gradle.node.pnpm.task.PnpmTask) {
+    dependsOn 'pnpmInstall'
+    args = ['run', 'build']
+    inputs.dir('frontend/src')
+    inputs.file('frontend/package.json')
+    inputs.file('frontend/pnpm-lock.yaml')
+    inputs.file('frontend/vite.config.ts')
+    inputs.file('frontend/tsconfig.json')
+    inputs.file('frontend/index.html')
+    outputs.dir('frontend/dist')
+}
+
+tasks.named('processResources') {
+    dependsOn 'pnpmBuild'
+    from('frontend/dist') {
+        into 'static'
+    }
 }
 

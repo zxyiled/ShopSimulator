@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.util.logging.Logger;
 
-@SpringBootApplication(scanBasePackages = {"org.controller", "org.config"})
+@SpringBootApplication(scanBasePackages = {"org.controller", "org.config", "org.app"})
 public class Main {
 
     public static final Logger logger = Logger.getLogger(Main.class.getName());

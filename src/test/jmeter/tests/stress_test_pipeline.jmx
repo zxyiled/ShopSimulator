@@ -25,8 +25,31 @@
             <stringProp name="Header.name">Content-Type</stringProp>
             <stringProp name="Header.value">application/json</stringProp>
           </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Cookie</stringProp>
+            <stringProp name="Header.value">XSRF-TOKEN=jmeter-csrf-token</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">X-XSRF-TOKEN</stringProp>
+            <stringProp name="Header.value">jmeter-csrf-token</stringProp>
+          </elementProp>
         </collectionProp>
       </HeaderManager>
+      <hashTree/>
+      <AuthManager guiclass="AuthPanel" testclass="AuthManager" testname="HTTP Authorization Manager">
+        <collectionProp name="AuthManager.auth_list">
+          <elementProp name="" elementType="Authorization">
+            <stringProp name="Authorization.url">http://localhost:8080</stringProp>
+            <stringProp name="Authorization.username">admin</stringProp>
+            <stringProp name="Authorization.password">admin123</stringProp>
+            <stringProp name="Authorization.domain"></stringProp>
+            <stringProp name="Authorization.realm"></stringProp>
+            <stringProp name="Authorization.mechanism">BASIC</stringProp>
+          </elementProp>
+        </collectionProp>
+        <boolProp name="AuthManager.clearEachIteration">false</boolProp>
+        <boolProp name="AuthManager.controlledByThreadGroup">false</boolProp>
+      </AuthManager>
       <hashTree/>
       <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="Setup - Register test product">
         <intProp name="ThreadGroup.num_threads">1</intProp>
