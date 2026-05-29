@@ -1,9 +1,5 @@
 trigger:
-  branches:
-    include:
-      - feature/login
-    exclude:
-      - main
+  - main
 
 pool:
   name: LocalPool  # Your local agent registered in Azure DevOps
@@ -18,7 +14,6 @@ variables:
 steps:
   # Step 1: Checkout the code
   - checkout: self
-    fetchDepth: 0
 
   # Step 2: Check Java version installed on the local agent
   - script: java -version
