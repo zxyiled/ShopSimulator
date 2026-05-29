@@ -77,10 +77,16 @@ dependencies {
 
     // PiTest mutation testing
     testImplementation 'org.pitest:pitest-junit5-plugin:1.2.1'
+
+    // Playwright — E2E tests (Firefox)
+    testImplementation 'com.microsoft.playwright:playwright:1.49.0'
 }
 
 test {
     useJUnitPlatform()
+    filter {
+        excludeTestsMatching "e2e.*"
+    }
 }
 
 pitest {
@@ -129,6 +135,21 @@ tasks.register("acceptanceTest", Test) {
     group = "verification"
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
+    filter {
+        includeTestsMatching "runners.*"
+    }
+}
+
+tasks.register("e2eTest", Test) {
+    useJUnitPlatform()
+    description = "Runs E2E tests with Playwright (Firefox). Requires the app running on :8080."
+    group = "verification"
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    filter {
+        includeTestsMatching "e2e.*"
+    }
+    outputs.upToDateWhen { false }
 }
 
 // ── Frontend (React + Vite, built with pnpm) ───────────────────────────────
