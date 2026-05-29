@@ -130,12 +130,26 @@ PATCH /api/products/PROD001/stock
 }
 ```
 
+#### Validate Stock
+```http
+GET /api/products/PROD001/validate?requiredQuantity=3
+```
+
 #### API Response Format
 ```json
 {
   "success": true,
   "message": "Product registered successfully",
   "data": { ... }
+}
+```
+
+Error responses:
+```json
+{
+  "success": false,
+  "message": "Insufficient stock. Available: 2, required: 3",
+  "data": null
 }
 ```
 
@@ -147,7 +161,8 @@ static resources (orchestrated by the `node-gradle` plugin during the Gradle
 build), so the same jar/container serves both the API and the UI.
 
 - `/login` — login page
-- `/dashboard` — inventory dashboard (list + register products, logout)
+- `/dashboard` — inventory dashboard (list products, register, augment/reduce
+  stock, low-stock alert banner)
 
 **Frontend development server** (hot reload, proxies `/api` to `:8080`):
 ```bash
@@ -171,6 +186,24 @@ The application is protected with **Spring Security**:
 - `POST /api/login` — form login (`200` on success, `401` on failure)
 - `POST /api/logout` — ends the session (`200`)
 - `GET /api/me` — returns the current authenticated username
+
+### CSRF Protection
+CSRF is **enabled** (Spring Security default). The React SPA uses the
+CookieCsrfTokenRepository pattern:
+
+1. Any **GET** request returns an `XSRF-TOKEN` cookie (non-HttpOnly, readable
+   by JavaScript).
+2. All mutating requests (POST, PATCH, DELETE) must echo that token in the
+   `X-XSRF-TOKEN` request header.
+
+The `JSESSIONID` cookie remains HttpOnly (not readable by JS). This is the
+[official Spring recommended pattern](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html#csrf-integration-javascript-spa)
+for SPAs.
+
+> **For API clients (Postman, curl):** send a GET to `/login` first to obtain
+> `XSRF-TOKEN`, then include `X-XSRF-TOKEN: <value>` in every mutating request.
+> A [Postman collection](docs/shopsimulator-postman.json) is included in
+> `docs/` with all endpoints pre-configured.
 
 ## Data Storage
 
@@ -208,6 +241,9 @@ The application provides comprehensive error handling:
 ./gradlew test
 ```
 
+Includes `AuthControllerTest` (unit test for SPA routing and `/api/me`
+endpoint, no `@SpringBootTest` overhead) and standard domain tests.
+
 **Acceptance Tests (Cucumber BDD):**
 ```bash
 ./gradlew acceptanceTest
@@ -230,6 +266,28 @@ when running from your IDE locally), disable headless mode:
 ./gradlew e2eTest -De2e.headless=false
 ```
 
+**E2E `data-testid` attributes** (for writing additional Playwright tests):
+
+| Attribute | Element |
+|---|---|
+| `data-testid="login-error"` | Login error message |
+| `data-testid="username-input"` | Username field |
+| `data-testid="password-input"` | Password field |
+| `data-testid="login-btn"` | Login button |
+| `data-testid="logout-btn"` | Logout button |
+| `data-testid="dashboard-title"` | Dashboard heading |
+| `data-testid="product-table"` | Product table |
+| `data-testid="code-input"` | Register product code field |
+| `data-testid="name-input"` | Register product name field |
+| `data-testid="price-input"` | Register product price field |
+| `data-testid="quantity-input"` | Register product quantity field |
+| `data-testid="register-btn"` | Register product button |
+| `data-testid="message"` | Dashboard feedback message |
+| `data-testid="low-stock-alert"` | Low-stock alert banner |
+| `data-testid="amount-{code}"` | Stock quantity input for product `{code}` |
+| `data-testid="augment-{code}"` | Augment button for product `{code}` |
+| `data-testid="reduce-{code}"` | Reduce button for product `{code}` |
+
 **Mutation Testing (PITest):**
 ```bash
 ./gradlew pitest
@@ -250,6 +308,12 @@ Run with JMeter GUI or CLI:
 jmeter -n -t tests/stress_test_pipeline.jmx -l tests/results/results.jtl -e -o tests/results/html
 ```
 Reports generated in `ShopSimulator/results/html/`
+
+### API Client (Postman)
+
+A Postman collection with all endpoints pre-configured is available at
+[`docs/shopsimulator-postman.json`](docs/shopsimulator-postman.json). Import it
+into Postman — it handles CSRF tokens automatically via collection variables.
 
 ### Code Quality
 
@@ -324,14 +388,15 @@ ShopSimulator/
 │       │   ├── org/
 │       │   │   ├── app/
 │       │   │   │   └── SysInventoryTest.java
-│       │   │   ├── controller/
-│       │   │   │   └── InventoryControllerTest.java
-│       │   │   └── logic/
-│       │   │       ├── ProductTest.java
-│       │   │       └── ValidatorTest.java
-│       │   ├── stepdefinitions/      (Cucumber step definitions)
-│       │   ├── runners/              (CucumberTestRunner — acceptance)
-│       │   └── e2e/                  (Playwright E2E: runner, pages, steps)
+│   │   │   ├── controller/
+│   │   │   │   ├── InventoryControllerTest.java
+│   │   │   │   └── AuthControllerTest.java      (SPA routing + /api/me unit tests)
+│   │   │   └── logic/
+│   │   │       ├── ProductTest.java
+│   │   │       └── ValidatorTest.java
+│   │   ├── stepdefinitions/      (Cucumber step definitions)
+│   │   ├── runners/              (CucumberTestRunner — acceptance)
+│   │   └── e2e/                  (Playwright E2E: runner, pages, steps, features)
 │       ├── resources/
 │       │   └── features/             (Cucumber .feature files; e2e/ tagged @e2e)
 │       └── jmeter/
