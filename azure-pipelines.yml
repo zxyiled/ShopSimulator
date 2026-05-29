@@ -76,17 +76,48 @@ steps:
       SONAR_TOKEN: $(SONAR_TOKEN)
       SONAR_HOST_URL: $(SONAR_HOST_URL)
 
-  # Step 8: Create results folders for Stress Tests
+  # Step 8: Run E2E tests (Playwright + Firefox) against the running app.
+  - script: |
+      # Start the app in the background. --no-daemon + setsid put the whole JVM
+      # tree in one process group so it can be killed reliably at the end.
+      setsid ./gradlew --no-daemon bootRun > bootRun.log 2>&1 &
+      APP_PGID=$!
+      echo "Started app (PGID $APP_PGID); waiting for http://localhost:8080/login"
+      for i in $(seq 1 30); do
+        if curl -sf -o /dev/null http://localhost:8080/login; then
+          echo "App is up after $((i * 2))s"
+          break
+        fi
+        sleep 2
+      done
+      ./gradlew e2eTest
+      E2E_EXIT=$?
+      echo "Stopping app (PGID $APP_PGID)"
+      kill -- -$APP_PGID 2>/dev/null || true
+      exit $E2E_EXIT
+    displayName: "E2E tests (Playwright + Firefox)"
+    workingDirectory: $(projectDir)
+
+  # Step 9: Publish E2E JUnit results.
+  - task: PublishTestResults@2
+    displayName: "Publish E2E test results"
+    condition: always()
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: '**/build/test-results/e2eTest/TEST-*.xml'
+      testRunTitle: 'E2E (Playwright)'
+
+  # Step 10: Create results folders for Stress Tests
   - script: |
       mkdir -p "$(htmlReport)"
     displayName: "Create JMeter results folders"
 
-  # Step 9: Run JMeter stress tests
+  # Step 11: Run JMeter stress tests
   - script: |
       jmeter -n -t "$(jmxFile)" -l "$(resultsFile)" -e -o "$(htmlReport)"
     displayName: "Run JMeter stress tests"
 
-  # Step 10: Publish HTML report as pipeline artifact
+  # Step 12: Publish HTML report as pipeline artifact
   - task: PublishBuildArtifacts@1
     displayName: "Publish JMeter report"
     inputs:

@@ -224,6 +224,12 @@ The application provides comprehensive error handling:
 E2E scenarios are tagged `@e2e` and are intentionally excluded from `test` and
 `acceptanceTest` so CI does not require a live app or a browser.
 
+By default Firefox runs headless. To watch the browser during execution (e.g.
+when running from your IDE locally), disable headless mode:
+```bash
+./gradlew e2eTest -De2e.headless=false
+```
+
 **Mutation Testing (PITest):**
 ```bash
 ./gradlew pitest

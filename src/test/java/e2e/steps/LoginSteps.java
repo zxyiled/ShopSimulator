@@ -26,7 +26,8 @@ public class LoginSteps {
     @BeforeAll
     public static void launchBrowser() {
         playwright = Playwright.create();
-        browser = playwright.firefox().launch(new BrowserType.LaunchOptions().setHeadless(true));
+        boolean headless = Boolean.parseBoolean(System.getProperty("e2e.headless", "true"));
+        browser = playwright.firefox().launch(new BrowserType.LaunchOptions().setHeadless(headless));
     }
 
     @AfterAll

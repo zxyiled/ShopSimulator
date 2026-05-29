@@ -149,6 +149,8 @@ tasks.register("e2eTest", Test) {
     filter {
         includeTestsMatching "e2e.*"
     }
+    systemProperty 'e2e.headless', System.getProperty('e2e.headless', 'true')
+    systemProperty 'e2e.baseUrl', System.getProperty('e2e.baseUrl', 'http://localhost:8080')
     outputs.upToDateWhen { false }
 }
 
