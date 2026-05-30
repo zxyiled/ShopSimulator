@@ -112,26 +112,17 @@ steps:
       ArtifactName: 'e2e-report'
       publishLocation: 'Container'
 
-  # Step 11: Publish acceptance Cucumber HTML report as pipeline artifact
-  - task: PublishBuildArtifacts@1
-    displayName: "Publish acceptance HTML report"
-    condition: always()
-    inputs:
-      PathtoPublish: 'target/cucumber-reports.html'
-      ArtifactName: 'acceptance-report'
-      publishLocation: 'Container'
-
-  # Step 12: Create results folders for Stress Tests
+  # Step 11: Create results folders for Stress Tests
   - script: |
       mkdir -p "$(htmlReport)"
     displayName: "Create JMeter results folders"
 
-  # Step 13: Run JMeter stress tests
+  # Step 12: Run JMeter stress tests
   - script: |
       jmeter -n -t "$(jmxFile)" -l "$(resultsFile)" -e -o "$(htmlReport)"
     displayName: "Run JMeter stress tests"
 
-  # Step 14: Publish HTML report as pipeline artifact
+  # Step 13: Publish HTML report as pipeline artifact
   - task: PublishBuildArtifacts@1
     displayName: "Publish JMeter report"
     inputs:
