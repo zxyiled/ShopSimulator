@@ -107,8 +107,9 @@ steps:
   - task: PublishBuildArtifacts@1
     displayName: "Publish E2E HTML report"
     condition: always()
+    continueOnError: true
     inputs:
-      PathtoPublish: 'target/cucumber-reports-e2e.html'
+      PathtoPublish: '$(Build.SourcesDirectory)/target/cucumber-reports-e2e.html'
       ArtifactName: 'e2e-report'
       publishLocation: 'Container'
 
@@ -125,8 +126,9 @@ steps:
   # Step 13: Publish HTML report as pipeline artifact
   - task: PublishBuildArtifacts@1
     displayName: "Publish JMeter report"
+    condition: always()
+    continueOnError: true
     inputs:
       PathtoPublish: '$(htmlReport)'
       ArtifactName: 'jmeter-report'
       publishLocation: 'Container'
-    condition: always()
