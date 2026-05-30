@@ -9,7 +9,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.DefaultCsrfToken;
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,11 +22,53 @@ import static org.mockito.Mockito.*;
 class SecurityConfigTest {
 
     @Nested
+    @DisplayName("SecurityConfig beans")
+    class Beans {
+
+        @Test
+        @DisplayName("passwordEncoder returns BCryptPasswordEncoder")
+        void passwordEncoder() {
+            SecurityConfig config = new SecurityConfig();
+            PasswordEncoder encoder = config.passwordEncoder();
+            assertInstanceOf(BCryptPasswordEncoder.class, encoder);
+        }
+
+        @Test
+        @DisplayName("userDetailsService creates InMemoryUserDetailsManager with admin user")
+        void userDetailsService() throws Exception {
+            SecurityConfig config = new SecurityConfig();
+            var usernameField = SecurityConfig.class.getDeclaredField("adminUsername");
+            var passwordField = SecurityConfig.class.getDeclaredField("adminPassword");
+            usernameField.setAccessible(true);
+            passwordField.setAccessible(true);
+            usernameField.set(config, "admin");
+            passwordField.set(config, "admin123");
+
+            PasswordEncoder encoder = new BCryptPasswordEncoder();
+            UserDetailsService service = config.userDetailsService(encoder);
+
+            UserDetails user = service.loadUserByUsername("admin");
+            assertEquals("admin", user.getUsername());
+            assertTrue(encoder.matches("admin123", user.getPassword()));
+        }
+    }
+
+    @Nested
     @DisplayName("SpaCsrfTokenRequestHandler")
     class SpaCsrfTokenRequestHandlerTest {
 
         private final SecurityConfig.SpaCsrfTokenRequestHandler handler =
                 new SecurityConfig.SpaCsrfTokenRequestHandler();
+
+        @Test
+        @DisplayName("handle delegates to XorCsrfTokenRequestAttributeHandler")
+        void handle() {
+            var request = mock(HttpServletRequest.class);
+            var response = mock(HttpServletResponse.class);
+            CsrfToken token = new DefaultCsrfToken("X-XSRF-TOKEN", "_csrf", "server-token");
+
+            assertDoesNotThrow(() -> handler.handle(request, response, () -> token));
+        }
 
         @Test
         @DisplayName("resolveCsrfTokenValue returns raw value when X-XSRF-TOKEN header is present")
