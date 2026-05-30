@@ -103,17 +103,35 @@ steps:
       testResultsFiles: '**/build/test-results/e2eTest/TEST-*.xml'
       testRunTitle: 'E2E (Playwright)'
 
-  # Step 10: Create results folders for Stress Tests
+  # Step 10: Publish E2E Cucumber HTML report as pipeline artifact
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish E2E HTML report"
+    condition: always()
+    inputs:
+      PathtoPublish: 'target/cucumber-reports-e2e.html'
+      ArtifactName: 'e2e-report'
+      publishLocation: 'Container'
+
+  # Step 11: Publish acceptance Cucumber HTML report as pipeline artifact
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish acceptance HTML report"
+    condition: always()
+    inputs:
+      PathtoPublish: 'target/cucumber-reports.html'
+      ArtifactName: 'acceptance-report'
+      publishLocation: 'Container'
+
+  # Step 12: Create results folders for Stress Tests
   - script: |
       mkdir -p "$(htmlReport)"
     displayName: "Create JMeter results folders"
 
-  # Step 11: Run JMeter stress tests
+  # Step 13: Run JMeter stress tests
   - script: |
       jmeter -n -t "$(jmxFile)" -l "$(resultsFile)" -e -o "$(htmlReport)"
     displayName: "Run JMeter stress tests"
 
-  # Step 12: Publish HTML report as pipeline artifact
+  # Step 14: Publish HTML report as pipeline artifact
   - task: PublishBuildArtifacts@1
     displayName: "Publish JMeter report"
     inputs:
