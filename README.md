@@ -20,7 +20,6 @@ It provides RESTful API endpoints for managing products, tracking stock levels, 
 - **REST API**: Full CRUD operations via HTTP endpoints
 - **Statistics Endpoint**: Inventory metrics (total products, low stock count, total value)
 - **Low Stock Alerts**: Automatic detection and endpoint to query alerts
-- **JSON API**: Structured request/response format
 - **HTTP Status Codes**: 200, 201, 400, 404 based on operation result
 
 ## Architecture
@@ -28,24 +27,31 @@ It provides RESTful API endpoints for managing products, tracking stock levels, 
 The application follows a clean, layered architecture:
 
 ```
-┌─────────────────┐
-│ InventoryController │ ← REST API Layer
-├─────────────────┤
-│   SysInventory  │ ← Business Logic Layer
-├─────────────────┤
-│ Product/Validator│ ← Domain Models
-└─────────────────┘
+┌──────────────────────────────────────────┐
+│            React SPA (frontend/)         │ ← Browser (same origin)
+├──────────────────────────────────────────┤
+│  InventoryController  │  AuthController  │ ← REST / SPA Routing
+│  (/api/products, etc.)│  (/login, /api/me)│
+├──────────────────────────────────────────┤
+│              SysInventory                │ ← Business Logic
+├──────────────────────────────────────────┤
+│       Product  │  Validator  │  Dto      │ ← Domain / DTOs
+├──────────────────────────────────────────┤
+│  AppConfig  │  SecurityConfig            │ ← Configuration & Security
+└──────────────────────────────────────────┘
 ```
 
 ### Package Structure
 
 - **`org.Main`**: Spring Boot application entry point
-- **`org.controller.InventoryController`**: REST API endpoints
-- **`org.dto.Dto`**: Data transfer objects for API requests/responses
-- **`org.app.SysInventory`**: Core business logic and inventory management
+- **`org.controller.InventoryController`**: REST API endpoints for product/stock/alerts
+- **`org.controller.AuthController`**: SPA routing (`/login`, `/dashboard`) and `/api/me`
+- **`org.dto.Dto`**: Data transfer objects (request/response records)
+- **`org.app.SysInventory`**: Core business logic and in-memory inventory management
 - **`org.logic.Product`**: Product entity model
 - **`org.logic.Validator`**: Input validation and business rules
-- **`org.config.AppConfig`**: Spring Boot configuration class
+- **`org.config.AppConfig`**: Spring Boot configuration (CORS, SysInventory bean)
+- **`org.config.SecurityConfig`**: Spring Security (form login, CSRF, HTTP Basic)
 
 ## Installation & Setup
 
@@ -83,7 +89,6 @@ http://localhost:8080/api
 - **Spring Boot**: Web framework with embedded Tomcat server
 - **Spring Security**: Form login + HTTP Basic authentication
 - **React + Vite + TypeScript**: Single-page frontend (built with pnpm)
-- **Jackson**: JSON serialization/deserialization
 - **JUnit 5**: Unit testing framework
 - **Cucumber**: Acceptance testing (BDD)
 - **Playwright (Firefox)**: End-to-end testing
@@ -110,9 +115,18 @@ http://localhost:8080/api
 
 ### Request/Response Examples
 
+Use this base URL for local or deployed environments:
+
+```http
+{{baseUrl}}
+```
+
 #### Register Product
+```http
+POST {{baseUrl}}/api/products
+```
+
 ```json
-POST /api/products
 {
   "code": "PROD001",
   "name": "Laptop",
@@ -122,8 +136,11 @@ POST /api/products
 ```
 
 #### Update Stock
+```http
+PATCH {{baseUrl}}/api/products/PROD001/stock
+```
+
 ```json
-PATCH /api/products/PROD001/stock
 {
   "operation": "augment",
   "quantity": 5
@@ -132,7 +149,7 @@ PATCH /api/products/PROD001/stock
 
 #### Validate Stock
 ```http
-GET /api/products/PROD001/validate?requiredQuantity=3
+GET {{baseUrl}}/api/products/PROD001/validate?qty=3
 ```
 
 #### API Response Format
@@ -140,7 +157,7 @@ GET /api/products/PROD001/validate?requiredQuantity=3
 {
   "success": true,
   "message": "Product registered successfully",
-  "data": { ... }
+  "data": "..."
 }
 ```
 
@@ -160,9 +177,14 @@ The web UI is a **React + Vite + TypeScript** single-page application located in
 static resources (orchestrated by the `node-gradle` plugin during the Gradle
 build), so the same jar/container serves both the API and the UI.
 
+Client-side routing is handled by **React Router v7** (`frontend/src/App.tsx`):
 - `/login` — login page
-- `/dashboard` — inventory dashboard (list products, register, augment/reduce
-  stock, low-stock alert banner)
+- `/dashboard` — inventory dashboard (list products, register, augment/reduce stock, low-stock alert banner)
+- `/*` — catch-all, redirects to `/dashboard`
+
+The Spring Boot `AuthController` forwards `/login` and `/dashboard` to
+`index.html` so React Router can handle client-side navigation when pages are
+loaded directly in the browser.
 
 **Frontend development server** (hot reload, proxies `/api` to `:8080`):
 ```bash
@@ -202,13 +224,20 @@ for SPAs.
 
 > **For API clients (Postman, curl):** send a GET to `/login` first to obtain
 > `XSRF-TOKEN`, then include `X-XSRF-TOKEN: <value>` in every mutating request.
-> A [Postman collection](docs/shopsimulator-postman.json) is included in
-> `docs/` with all endpoints pre-configured.
 
-## Data Storage
+### CORS Configuration
 
-**In-Memory Only**: Data is stored exclusively in memory during execution. 
-When the application restarts, all data is lost and the inventory starts empty.
+Cross-Origin Resource Sharing is configured globally in `AppConfig.java`:
+- **Allowed origin**: `http://localhost:8080` (same-server only)
+- **Allowed methods**: `GET`, `POST`, `PATCH`, `DELETE`
+- **Path pattern**: `/api/**`
+
+This restrictive policy works because:
+- **Production** — the React SPA is served from the same Spring Boot server (same origin), so CORS is never triggered.
+- **Development** — the Vite dev server proxies `/api` requests to `:8080` (configured in `vite.config.ts`), bypassing CORS at the browser level.
+
+> Direct API access from a different origin will be blocked. Adjust
+> `allowedOrigins` in `AppConfig.java` for your deployment needs.
 
 ## Validation Rules
 
@@ -292,6 +321,7 @@ when running from your IDE locally), disable headless mode:
 ```bash
 ./gradlew pitest
 ```
+PITest targets the `org.app.*` and `org.logic.*` packages (configured in `build.gradle`).
 
 **Code Coverage (JaCoCo):**
 ```bash
@@ -305,15 +335,9 @@ Load test plans located in `src/test/jmeter/tests/`
 
 Run with JMeter GUI or CLI:
 ```bash
-jmeter -n -t tests/stress_test_pipeline.jmx -l tests/results/results.jtl -e -o tests/results/html
+jmeter -n -t src/test/jmeter/tests/stress_test_pipeline.jmx -l tests/results/results.jtl -e -o tests/results/html
 ```
 Reports generated in `ShopSimulator/results/html/`
-
-### API Client (Postman)
-
-A Postman collection with all endpoints pre-configured is available at
-[`docs/shopsimulator-postman.json`](docs/shopsimulator-postman.json). Import it
-into Postman — it handles CSRF tokens automatically via collection variables.
 
 ### Code Quality
 
@@ -326,9 +350,10 @@ Requires SonarQube server running (configured in `build.gradle`).
 
 ## Docker
 
-The project ships a multi-stage `Dockerfile`: the builder stage compiles the
-React frontend (pnpm) and the Spring Boot fat jar (`bootJar`); the runtime stage
-is a slim JRE image (~300 MB) running as a non-root user.
+The project ships a multi-stage `Dockerfile`: the builder stage (`gradle:8.7-jdk17`)
+compiles the React frontend (pnpm) and the Spring Boot fat jar (`bootJar`); the
+runtime stage (`eclipse-temurin:17-jre-alpine`) is a slim JRE image (~300 MB)
+running as a non-root user.
 
 ```bash
 # Build image
@@ -398,12 +423,21 @@ ShopSimulator/
 │   │   ├── runners/              (CucumberTestRunner — acceptance)
 │   │   └── e2e/                  (Playwright E2E: runner, pages, steps, features)
 │       ├── resources/
-│       │   └── features/             (Cucumber .feature files; e2e/ tagged @e2e)
+│       │   ├── junit-platform.properties  (Cucumber glue, tag filters, plugins)
+│       │   └── features/                  (Cucumber .feature files; e2e/ tagged @e2e)
 │       └── jmeter/
 │           └── tests/                (JMeter performance test plans)
 │               └── stress_test_pipeline.jmx
 ├── frontend/                         (React + Vite + TypeScript SPA, built with pnpm)
 │   ├── src/
+│   │   ├── main.tsx                  (React entry point)
+│   │   ├── App.tsx                   (React Router: /login, /dashboard, /*)
+│   │   ├── api.ts                    (API client with CSRF handling)
+│   │   ├── types.ts                  (TypeScript interfaces: Product, ApiResponse)
+│   │   ├── styles.css                (Application styles)
+│   │   └── pages/
+│   │       ├── Login.tsx
+│   │       └── Dashboard.tsx
 │   ├── index.html
 │   ├── package.json
 │   ├── pnpm-lock.yaml
@@ -436,6 +470,14 @@ Default port is 8080. Override with:
 ./gradlew bootRun --args="--server.port=8081"
 ```
 
+### Maven Publishing
+
+The project publishes to an Azure DevOps Maven feed (configured in `build.gradle`):
+```bash
+./gradlew publish
+```
+Requires Azure DevOps credentials in `~/.gradle/gradle.properties`.
+
 ## Contributing
 
 1. Follow Java naming conventions
@@ -464,40 +506,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
   - End-to-end tests with Playwright (Firefox)
   - Multi-stage Docker image
   - Cloud deployment on Render (`render.yaml`)
-
-## Documentation
-
-- [Critical Path](docs/critical-path.md) — essential functionality, dependencies and risk matrix
-- [Test Plan](docs/test-plan.md) — testing strategy, suites and test cases
-
-## Code Quality & Analysis
-
-This section documents the code quality analysis and technical debt tracking throughout the project development.
-
-### Initial Analysis
-The following image shows the first analysis performed on the initial codebase:
-
-![First Analysis](assets/images/firstanalysis.png)
-
-### Initial Technical Debt
-The initial technical debt identified due to bad practices in the early development:
-
-![First Technical Debt](assets/images/firsttechnicaldebt.png)
-
-### Mutation Testing
-Mutation testing performed with PITest after project updates and improvements:
-
-![Mutation Test](assets/images/mutationtest.png)
-
-### Updated SonarQube Analysis
-Recent SonarQube scan showing the current state of code quality:
-
-![Updated SonarQube Analysis](assets/images/sonarqupdated.png)
-
-### Current Technical Debt
-The current technical debt status after all improvements and refactoring:
-
-![Current Technical Debt](assets/images/newtechnicaldebt.png)
 
 ## Support
 

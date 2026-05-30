@@ -18,9 +18,6 @@ frontend/dist/
 
 # Docs and local-only material
 *.md
-docs/
-prompts/
-assets/
 
 # Local env / secrets — never bake into the image
 *.env

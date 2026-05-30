@@ -56,9 +56,5 @@ results/
 frontend/node_modules/
 frontend/dist/
 
-### Misc ###
-docs
-prompts
-
 ### Build outputs ###
 target/
