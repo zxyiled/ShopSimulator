@@ -2,6 +2,29 @@
 
 A modern Spring Boot REST API application for managing shop inventory with comprehensive endpoints and in-memory data storage.
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-17-%23ED8B00?logo=openjdk&logoColor=white" alt="Java 17"/>
+  <img src="https://img.shields.io/badge/Spring_Boot-4.0-%236DB33F?logo=springboot&logoColor=white" alt="Spring Boot 4.0"/>
+  <img src="https://img.shields.io/badge/Spring_Security-%236DB33F?logo=springsecurity&logoColor=white" alt="Spring Security"/>
+  <img src="https://img.shields.io/badge/Gradle-9.0-%2302303A?logo=gradle&logoColor=white" alt="Gradle 9.0"/>
+  <img src="https://img.shields.io/badge/JUnit_5-%2325A162?logo=junit5&logoColor=white" alt="JUnit 5"/>
+  <img src="https://img.shields.io/badge/Cucumber-%2323D96C?logo=cucumber&logoColor=white" alt="Cucumber"/>
+  <img src="https://img.shields.io/badge/PITest-1.15-%23A90533" alt="PITest"/>
+  <img src="https://img.shields.io/badge/JaCoCo-0.8-%23E4405F" alt="JaCoCo"/>
+  <img src="https://img.shields.io/badge/SonarQube-%234E9BCD?logo=sonarqube&logoColor=white" alt="SonarQube"/>
+  <img src="https://img.shields.io/badge/JMeter-%23D22128?logo=apachejmeter&logoColor=white" alt="JMeter"/>
+  <br/>
+  <img src="https://img.shields.io/badge/React-19-%2361DAFB?logo=react&logoColor=white" alt="React 19"/>
+  <img src="https://img.shields.io/badge/Vite-6-%23646CFF?logo=vite&logoColor=white" alt="Vite 6"/>
+  <img src="https://img.shields.io/badge/TypeScript-5.8-%233178C6?logo=typescript&logoColor=white" alt="TypeScript 5.8"/>
+  <img src="https://img.shields.io/badge/pnpm-%23F69220?logo=pnpm&logoColor=white" alt="pnpm"/>
+  <img src="https://img.shields.io/badge/Playwright-%232EAD33?logo=playwright&logoColor=white" alt="Playwright"/>
+  <br/>
+  <img src="https://img.shields.io/badge/Docker-%232496ED?logo=docker&logoColor=white" alt="Docker"/>
+  <img src="https://img.shields.io/badge/Azure_DevOps-%230078D7?logo=azuredevops&logoColor=white" alt="Azure DevOps"/>
+  <img src="https://img.shields.io/badge/Render-%2346E3B7?logo=render&logoColor=white" alt="Render"/>
+</p>
+
 ## Overview
 
 Shop Simulator is a backend inventory management system designed for small to medium-sized retail businesses. 
@@ -506,6 +529,32 @@ This project is licensed under the MIT License - see the LICENSE file for detail
   - End-to-end tests with Playwright (Firefox)
   - Multi-stage Docker image
   - Cloud deployment on Render (`render.yaml`)
+
+## Roadmap
+
+### Persistent Storage
+- [ ] Replace in-memory storage (`SysInventory` with `ArrayList`) with **PostgreSQL** via Spring Data JPA
+- [ ] Add Flyway or Liquibase for schema migrations
+- [ ] Keep in-memory fallback for tests
+
+### SecurityConfig Tests
+- [ ] Add integration tests for `SecurityConfig`:
+  - CSRF cookie issuance on GET requests
+  - Login/logout success (200) and failure (401)
+  - Unauthenticated `/api/**` requests return 401
+  - Authenticated access to protected endpoints
+- [ ] Use `@SpringBootTest` + `TestRestTemplate` or `MockMvc` via `@WebMvcTest`
+
+### Frontend Mutation Testing
+- [ ] Evaluate **Stryker Mutator** for TypeScript/React (integrates with Vitest)
+- [ ] Weigh CI time cost vs. benefit (PITest already adds minutes to the pipeline)
+- [ ] Alternative: increase coverage thresholds for Vitest if mutation testing proves too heavy
+
+### Additional Improvements
+- [ ] Clean up dead code: `ValidateRequest` DTO in `Dto.java` is defined but never used by any endpoint
+- [ ] Migrate CORS allowed origins to `application.properties` (currently hardcoded in `AppConfig.java`)
+- [ ] Add OpenAPI/Swagger documentation via `springdoc-openapi`
+- [ ] Introduce Spring profiles for dev/test/prod environments
 
 ## Support
 
